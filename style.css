@@ -174,3 +174,17 @@ button:disabled {
   gap: 8px;
   margin-top: 24px;
 }
+
+.timer {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.hint-button {
+  margin-top: 12px;
+}
+
+.choice.removed {
+  opacity: 0.35;
+  text-decoration: line-through;
+}

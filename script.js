@@ -164,11 +164,13 @@ function remainingSeconds(deadline, now) {
 
 const MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" };
 
-// 지금 고른 모드와 카테고리, 진행 중인 판
+// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머
 const app = {
   mode: "practice",
   category: CATEGORIES[0],
   round: null,
+  timerId: null,
+  deadline: 0,
 };
 
 function byId(id) {
@@ -186,12 +188,17 @@ function setUpPage() {
     console.warn(`[문항 검사] ${message}`);
   });
 
+  makeOptionButtons("mode-buttons", Object.keys(MODE_NAMES), (mode) => MODE_NAMES[mode], (mode) => {
+    app.mode = mode;
+    updateStartScreen();
+  });
   makeOptionButtons("category-buttons", CATEGORIES, (category) => category, (category) => {
     app.category = category;
     updateStartScreen();
   });
   byId("start-button").addEventListener("click", startNewRound);
   byId("next-button").addEventListener("click", nextQuestion);
+  byId("hint-button").addEventListener("click", handleHint);
   byId("replay-button").addEventListener("click", startNewRound);
   byId("home-button").addEventListener("click", () => showScreen("start-screen"));
 
@@ -220,10 +227,14 @@ function markSelected(containerId, selectedValue) {
 }
 
 function updateStartScreen() {
+  markSelected("mode-buttons", app.mode);
   markSelected("category-buttons", app.category);
+  byId("start-notice").hidden = app.mode !== "practice";
 }
 
+// 화면을 바꿀 때는 언제나 스피드 모드 타이머를 멈춘다.
 function showScreen(id) {
+  stopTimer();
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.hidden = screen.id !== id;
   });
@@ -255,6 +266,14 @@ function showQuestion() {
     choices.append(button);
   });
   byId("feedback").hidden = true;
+
+  const hintButton = byId("hint-button");
+  hintButton.hidden = round.mode !== "hint";
+  hintButton.disabled = false;
+  byId("timer").hidden = round.mode !== "speed";
+  if (round.mode === "speed") {
+    startTimer();
+  }
 }
 
 // chosenIndex가 null이면 시간 초과다.
@@ -263,7 +282,43 @@ function handleAnswer(chosenIndex) {
   if (!result) {
     return; // 이미 답한 문항
   }
+  stopTimer(); // 해설이 보이는 동안 타이머를 멈춘다.
+  byId("hint-button").disabled = true;
   showFeedback(result);
+}
+
+function handleHint() {
+  const removed = useHint(app.round);
+  if (!removed) {
+    return;
+  }
+  const buttons = byId("choices").querySelectorAll("button");
+  removed.forEach((i) => {
+    buttons[i].disabled = true;
+    buttons[i].classList.add("removed");
+  });
+  byId("hint-button").disabled = true;
+}
+
+function startTimer() {
+  stopTimer();
+  app.deadline = Date.now() + SPEED_SECONDS * 1000;
+  updateTimer();
+  app.timerId = setInterval(updateTimer, 200);
+}
+
+function updateTimer() {
+  const left = remainingSeconds(app.deadline, Date.now());
+  byId("timer").textContent = `남은 시간 ${left}초`;
+  if (left === 0) {
+    stopTimer();
+    handleAnswer(null);
+  }
+}
+
+function stopTimer() {
+  clearInterval(app.timerId);
+  app.timerId = null;
 }
 
 function showFeedback(result) {
@@ -291,7 +346,13 @@ function showFeedback(result) {
 }
 
 function feedbackMessage(result) {
-  return result.correct ? "정답입니다." : "오답입니다.";
+  if (result.chosenIndex === null) {
+    return "시간 초과로 오답입니다.";
+  }
+  if (!result.correct) {
+    return "오답입니다.";
+  }
+  return result.points === 0.5 ? "정답입니다. 힌트를 써서 0.5점입니다." : "정답입니다.";
 }
 
 function nextQuestion() {
