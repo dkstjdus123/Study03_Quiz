@@ -37,6 +37,8 @@ function validateQuestions(questions) {
     }
     if (!Array.isArray(q.choices) || q.choices.length !== CHOICE_COUNT) {
       messages.push(`${label}: 보기가 ${CHOICE_COUNT}개가 아닙니다.`);
+    } else if (new Set(q.choices).size !== CHOICE_COUNT) {
+      messages.push(`${label}: 보기 중에 같은 것이 있습니다.`);
     }
     if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer >= CHOICE_COUNT) {
       messages.push(`${label}: answer는 0~${CHOICE_COUNT - 1} 사이의 정수여야 합니다.`);
@@ -45,7 +47,7 @@ function validateQuestions(questions) {
       messages.push(`${label}: 해설(explanation)이 비어 있습니다.`);
     }
     if (!isValidSource(q.source)) {
-      messages.push(`${label}: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.`);
+      messages.push(`${label}: 출처(source)에 name과 https://로 시작하는 url이 있어야 합니다.`);
     }
   });
 
@@ -63,14 +65,14 @@ function isFilled(text) {
   return typeof text === "string" && text.trim() !== "";
 }
 
-// 출처는 { name, url } 모양이다. url은 화면에서 링크가 되므로 http:// 또는 https://로 시작해야 한다.
+// 출처는 { name, url } 모양이다. url은 화면에서 링크가 되므로 https://로 시작해야 한다.
 function isValidSource(source) {
   return (
     typeof source === "object" &&
     source !== null &&
     isFilled(source.name) &&
     isFilled(source.url) &&
-    /^https?:\/\//.test(source.url)
+    /^https:\/\//.test(source.url)
   );
 }
 
@@ -399,6 +401,12 @@ check("validateQuestions: 보기가 4개가 아니면 경고한다", () => {
   expectEqual(validateWithFirst({ choices: ["가", "나", "다"] }), ["c0-1: 보기가 4개가 아닙니다."]);
 });
 
+check("validateQuestions: 한 문항의 보기 중에 같은 것이 있으면 경고한다", () => {
+  expectEqual(validateWithFirst({ choices: ["정답", "오답", "오답", "오답3"] }), [
+    "c0-1: 보기 중에 같은 것이 있습니다.",
+  ]);
+});
+
 check("validateQuestions: answer가 0~3 사이의 정수가 아니면 경고한다", () => {
   [4, -1, 1.5, "0", undefined].forEach((answer) => {
     expectEqual(validateWithFirst({ answer }), ["c0-1: answer는 0~3 사이의 정수여야 합니다."]);
@@ -423,17 +431,18 @@ check("validateQuestions: 카테고리가 4개 중 하나가 아니거나 개수
   ]);
 });
 
-check("validateQuestions: 출처가 { name, url } 모양이 아니면 경고한다", () => {
+check("validateQuestions: 출처가 { name, url } 모양이 아니거나 https://가 아니면 경고한다", () => {
   const broken = [
     "문자열 출처",
     null,
     { name: "", url: "https://example.com" },
     { name: "출처", url: "" },
+    { name: "출처", url: "http://example.com" },
     { name: "출처", url: "javascript:alert(1)" },
   ];
   broken.forEach((source) => {
     expectEqual(validateWithFirst({ source }), [
-      "c0-1: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.",
+      "c0-1: 출처(source)에 name과 https://로 시작하는 url이 있어야 합니다.",
     ]);
   });
 });
