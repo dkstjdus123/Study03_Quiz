@@ -42,6 +42,16 @@
 
 | id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
 |---|---|---|---|---|---|
+| science-01 | H₂O | NIST: 물의 Formula "H2O" | ✅ | ✅ | 해당 없음 |
+| science-02 | 수성 | NASA: "Mercury is the closest planet to the Sun" | ✅ | ✅ | ✅ 태양으로부터의 거리 기준, 2026년 현재 |
+| science-03 | 철 | PubChem: 원소 "Iron", 기호 "Fe" | ✅ | ✅ | 해당 없음 |
+| science-04 | 광합성 | NASA: "During photosynthesis, plants absorb carbon dioxide and sunlight to create fuel—glucose and other sugars" | ✅ | ✅ | 해당 없음 |
+| science-05 | 초속 약 30만 km | NIST: 진공에서 빛의 속력 "299 792 458 m s-1"(정확한 값) | ✅ (다른 보기는 10배 이상 차이) | ✅ | ✅ 보기 중에서 가장 가까운 값을 묻는 것으로, 기준이 문제에 있음 |
+| science-06 | 목성 | NASA: "the largest in the solar system, by far" | ✅ | ✅ | ✅ NASA 자료 기준, 2026년 현재 |
+| science-07 | 100°C | NIST: 물의 Tboil "373.17 ± 0.04 K"(약 100°C) | ✅ (다른 보기는 10°C 이상 차이) | ✅ | 해당 없음 |
+| science-08 | 아이작 뉴턴 | 미국 의회도서관: "Newton's universal law of gravitation bridged the terrestrial and celestial realms" | ✅ | ✅ | 해당 없음 |
+| science-09 | 수소 | 로스앨러모스 국립연구소: Hydrogen, 기호 H, 원자 번호 1 | ✅ | ✅ | 해당 없음 |
+| science-10 | 알렉산더 플레밍 | 영국 과학박물관: "In 1928 Dr Alexander Fleming ... found mould growing on a Petri dish", 그 물질을 penicillin이라 이름 붙임 | ✅ | ✅ | 해당 없음 |
 
 ## 예술과 문화
 

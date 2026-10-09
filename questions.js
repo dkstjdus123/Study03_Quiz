@@ -194,16 +194,16 @@ const QUESTIONS = [
     choices: ["H₂O", "CO₂", "O₂", "NaCl"],
     answer: 0,
     explanation: "물은 수소 원자 2개와 산소 원자 1개로 이루어진 H₂O이다.",
-    source: { name: "한국어 위키백과 「물」", url: "https://ko.wikipedia.org/wiki/물" }
+    source: { name: "NIST Chemistry WebBook 「Water」", url: "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185" }
   },
   {
     id: "science-02",
     category: "과학",
-    question: "태양으로부터의 평균 거리 기준으로 태양에 가장 가까운 행성은?",
+    question: "2026년 현재 태양계 행성 중 태양으로부터의 거리 기준으로 태양에 가장 가까운 행성은?",
     choices: ["수성", "금성", "지구", "화성"],
     answer: 0,
-    explanation: "수성은 태양으로부터 평균 약 5,800만 km 떨어져 있어 태양에 가장 가깝다.",
-    source: { name: "한국어 위키백과 「수성」", url: "https://ko.wikipedia.org/wiki/수성" }
+    explanation: "수성은 태양에 가장 가까운 행성이자 태양계에서 가장 작은 행성이다.",
+    source: { name: "NASA Science 「Mercury」", url: "https://science.nasa.gov/mercury/" }
   },
   {
     id: "science-03",
@@ -211,17 +211,17 @@ const QUESTIONS = [
     question: "원소 기호가 Fe인 원소는?",
     choices: ["철", "불소", "납", "금"],
     answer: 0,
-    explanation: "Fe는 원자 번호 26번인 철의 원소 기호이다.",
-    source: { name: "한국어 위키백과 「철」", url: "https://ko.wikipedia.org/wiki/철" }
+    explanation: "Fe는 철(Iron)의 원소 기호이다.",
+    source: { name: "PubChem(미국 국립보건원) 「Iron」", url: "https://pubchem.ncbi.nlm.nih.gov/element/26" }
   },
   {
     id: "science-04",
     category: "과학",
-    question: "식물이 빛 에너지를 이용해 이산화 탄소와 물로 양분(당)을 만드는 과정은?",
+    question: "식물이 이산화 탄소와 햇빛을 흡수해 포도당 같은 당을 만드는 과정은?",
     choices: ["광합성", "세포 호흡", "증산 작용", "발효"],
     answer: 0,
-    explanation: "광합성은 빛 에너지를 화학 에너지로 바꾸어 이산화 탄소와 물로부터 당을 만드는 과정이다.",
-    source: { name: "한국어 위키백과 「광합성」", url: "https://ko.wikipedia.org/wiki/광합성" }
+    explanation: "광합성에서 식물은 이산화 탄소와 햇빛을 흡수해 포도당 같은 당을 만든다.",
+    source: { name: "NASA Earth Observatory 「The Carbon Cycle」", url: "https://science.nasa.gov/earth/earth-observatory/the-carbon-cycle" }
   },
   {
     id: "science-05",
@@ -230,34 +230,34 @@ const QUESTIONS = [
     choices: ["초속 약 30만 km", "초속 약 3만 km", "초속 약 300만 km", "초속 약 3천 km"],
     answer: 0,
     explanation: "진공에서 빛의 속력은 정확히 초속 299,792,458m, 곧 초속 약 30만 km이다.",
-    source: { name: "한국어 위키백과 「빛의 속력」", url: "https://ko.wikipedia.org/wiki/빛의_속력" }
+    source: { name: "NIST 물리 상수 「speed of light in vacuum」", url: "https://physics.nist.gov/cgi-bin/cuu/Value?c" }
   },
   {
     id: "science-06",
     category: "과학",
-    question: "사람의 적혈구 안에서 산소를 운반하는 단백질은?",
-    choices: ["헤모글로빈", "인슐린", "케라틴", "콜라겐"],
+    question: "2026년 현재 NASA 자료 기준으로 태양계에서 가장 큰 행성은?",
+    choices: ["목성", "토성", "지구", "해왕성"],
     answer: 0,
-    explanation: "헤모글로빈은 철을 포함한 단백질로, 적혈구에서 산소를 운반한다.",
-    source: { name: "한국어 위키백과 「헤모글로빈」", url: "https://ko.wikipedia.org/wiki/헤모글로빈" }
+    explanation: "목성은 태양에서 다섯 번째 행성이며 태양계에서 가장 큰 행성이다.",
+    source: { name: "NASA Science 「Jupiter」", url: "https://science.nasa.gov/jupiter/" }
   },
   {
     id: "science-07",
     category: "과학",
-    question: "1기압(표준 대기압)에서 순수한 물이 끓는 온도는 약 몇 °C인가?",
+    question: "1기압에서 순수한 물이 끓는 온도는 약 몇 °C인가?",
     choices: ["100°C", "90°C", "80°C", "120°C"],
     answer: 0,
-    explanation: "1기압에서 물의 끓는점은 약 100°C(정밀하게는 약 99.98°C)이다.",
-    source: { name: "한국어 위키백과 「물」", url: "https://ko.wikipedia.org/wiki/물" }
+    explanation: "NIST 자료에서 물의 끓는점은 약 373.17 K로, 약 100°C이다.",
+    source: { name: "NIST Chemistry WebBook 「Water, 상변화 자료」", url: "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=4" }
   },
   {
     id: "science-08",
     category: "과학",
-    question: "1687년 『프린키피아』에서 만유인력의 법칙을 발표한 과학자는?",
+    question: "만유인력 법칙으로 지상의 운동과 천체의 운동을 하나로 이어 설명한 과학자는?",
     choices: ["아이작 뉴턴", "갈릴레오 갈릴레이", "알베르트 아인슈타인", "요하네스 케플러"],
     answer: 0,
-    explanation: "뉴턴은 1687년 『자연철학의 수학적 원리』(프린키피아)에서 만유인력의 법칙을 소개했다.",
-    source: { name: "한국어 위키백과 「만유인력의 법칙」", url: "https://ko.wikipedia.org/wiki/만유인력의_법칙" }
+    explanation: "뉴턴의 만유인력 법칙은 지상과 천체의 운동을 하나의 법칙으로 이어 주었다.",
+    source: { name: "미국 의회도서관 「Physical Astronomy for the Mechanistic Universe」", url: "https://www.loc.gov/static/collections/finding-our-place-in-the-cosmos-with-carl-sagan/articles-and-essays/modeling-the-cosmos/physical-astronomy-for-the-mechanistic-universe.html" }
   },
   {
     id: "science-09",
@@ -266,16 +266,16 @@ const QUESTIONS = [
     choices: ["수소", "헬륨", "산소", "탄소"],
     answer: 0,
     explanation: "수소는 원자 번호 1번이며 원소 기호는 H이다.",
-    source: { name: "한국어 위키백과 「수소」", url: "https://ko.wikipedia.org/wiki/수소" }
+    source: { name: "로스앨러모스 국립연구소 주기율표 「Hydrogen」", url: "https://www.lanl.gov/science-engineering/periodic-table/element/hydrogen" }
   },
   {
     id: "science-10",
     category: "과학",
-    question: "1953년 DNA의 이중 나선 구조를 발표한 과학자들은?",
-    choices: ["왓슨과 크릭", "멘델과 다윈", "퀴리 부부", "파스퇴르와 코흐"],
+    question: "1928년 세균 배양 접시에 핀 곰팡이를 관찰하고, 그 물질을 페니실린이라 이름 붙인 과학자는?",
+    choices: ["알렉산더 플레밍", "루이 파스퇴르", "로베르트 코흐", "에드워드 제너"],
     answer: 0,
-    explanation: "제임스 왓슨과 프랜시스 크릭이 1953년 DNA 이중 나선 구조를 발표했다.",
-    source: { name: "한국어 위키백과 「DNA」", url: "https://ko.wikipedia.org/wiki/DNA" }
+    explanation: "플레밍은 1928년 배양 접시의 곰팡이를 관찰했고, 그 물질을 페니실린이라 불렀다.",
+    source: { name: "영국 과학박물관 「How was penicillin developed?」", url: "https://www.sciencemuseum.org.uk/objects-and-stories/how-was-penicillin-developed" }
   },
 
   // ----- 예술과 문화 -----
