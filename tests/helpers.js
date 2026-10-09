@@ -21,7 +21,7 @@ function makeQuestion(overrides = {}) {
     choices: ["정답", "오답1", "오답2", "오답3"],
     answer: 0,
     explanation: "해설",
-    source: "출처",
+    source: { name: "출처", url: "https://example.com" },
     ...overrides,
   };
 }

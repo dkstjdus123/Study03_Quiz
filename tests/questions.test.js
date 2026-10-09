@@ -33,11 +33,31 @@ test("answer가 0~3 사이의 정수가 아니면 경고한다", () => {
 test("해설이나 출처가 비어 있으면 경고한다", () => {
   const set = makeValidSet();
   set[0] = makeQuestion({ id: "c0-1", explanation: "  " });
-  set[1] = makeQuestion({ id: "c0-2", source: "" });
+  set[1] = makeQuestion({ id: "c0-2", source: undefined });
   assert.deepEqual(validateQuestions(set), [
     "c0-1: 해설(explanation)이 비어 있습니다.",
-    "c0-2: 출처(source)가 비어 있습니다.",
+    "c0-2: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.",
   ]);
+});
+
+test("출처가 { name, url } 모양이 아니면 경고한다", () => {
+  const broken = [
+    "문자열 출처",
+    null,
+    { name: "", url: "https://example.com" },
+    { name: "출처", url: "" },
+    { name: "출처", url: "example.com" },
+    { name: "출처", url: "javascript:alert(1)" },
+  ];
+  for (const source of broken) {
+    const set = makeValidSet();
+    set[0] = makeQuestion({ id: "c0-1", source });
+    assert.deepEqual(
+      validateQuestions(set),
+      ["c0-1: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다."],
+      JSON.stringify(source),
+    );
+  }
 });
 
 test("id가 비어 있거나 겹치면 경고한다", () => {
