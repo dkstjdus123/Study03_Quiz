@@ -1,132 +1,182 @@
 <!-- 2026-10-09 22:15 KST -->
 
-# 상식 퀴즈 웹 앱 구현 계획
+# 상식 퀴즈 웹 앱 구현 계획 (실습 규칙에 맞춘 3단계 재작업)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **실행자에게:** 이 계획은 superpowers:executing-plans로 **이 세션에서 직접** 태스크 단위로 실행합니다. 진행 표시는 체크박스(`- [ ]`)로 합니다. 각 단계의 마지막 태스크에서 반드시 멈추고, 사용자가 승인하기 전에는 다음 태스크로 넘어가지 않습니다.
 
-**Goal:** 서버 없이 `index.html`을 열면 동작하는 4지선다 상식 퀴즈(연습, 스피드, 힌트 모드와 순위표)를 만든다.
+**목표:** 이미 완성된 퀴즈 앱을 수정된 [PRD.md](PRD.md)에 맞게 3단계로 고칩니다. 단계마다 점검하고, 사용자 확인을 받고, 배포합니다.
 
-**Architecture:** `script.js`를 "규칙" 부분과 "화면" 부분으로 나눈다. 규칙 부분은 DOM을 쓰지 않는 순수 함수(섞기, 채점, 힌트, 남은 시간, 순위표)라서 Node 테스트로 검사하고, 화면 부분은 `index.html`에 미리 둔 `<section>`을 보이거나 숨기며 규칙 함수를 부른다. 문항은 `questions.js`의 전역 상수 `QUESTIONS`에 두고, `file://`에서도 동작하도록 일반 `<script>` 태그로 불러온다.
+**구조:** `index.html`에 화면을 `<section>`으로 미리 두고 `hidden`으로 바꿉니다. `questions.js`는 전역 상수 `QUESTIONS` 하나를 선언하는 일반 스크립트입니다. `script.js`는 위에서 아래로 `규칙(순수 함수)`, `자체 점검`, `화면`의 세 구역입니다. 규칙과 자체 점검은 DOM을 쓰지 않아 Node에서도 돌릴 수 있습니다.
 
-**Tech Stack:** HTML, CSS, 바닐라 JavaScript(브라우저), Node.js 24 내장 테스트 러너(`node --test`, `node:assert/strict`)
+**기술:** HTML, CSS, 바닐라 JavaScript. 라이브러리, 빌드 도구, 테스트 프레임워크는 쓰지 않습니다. 점검용으로만 Node.js 24를 씁니다.
 
-**Spec:** `PRD.md`
+**명세:** [PRD.md](PRD.md). 실행자는 이 계획과 PRD를 함께 읽습니다.
 
-## Global Constraints
+## 전역 제약
 
-- 앱 파일은 `index.html`, `style.css`, `script.js`, `questions.js` 4개다. 테스트는 개발용으로 `tests/` 폴더에 따로 둔다(사용자 결정).
-- `file://`로 열어 동작해야 한다. `fetch`와 ES 모듈(`<script type="module">`, `import`, `export`)을 쓰지 않는다.
-- `index.html`은 `questions.js`, `script.js` 순서로 일반 `<script>` 태그로 불러온다.
-- 외부 라이브러리, 빌드 도구, `package.json`을 쓰지 않는다. 테스트는 Node 내장 기능만 쓴다.
-- 휴대폰 화면 폭(약 360px)에서도 읽고 누를 수 있어야 한다.
-- 문항 데이터는 `textContent`로만 화면에 넣는다. `innerHTML`을 쓰지 않는다.
-- 연습 모드 안내 문구는 정확히 `순위표에 기록되지 않음`이다.
-- 점수 표시: 정수면 `7`, 0.5가 있으면 `7.5`. 결과는 `7.5 / 10` 형식이다.
-- localStorage 키는 `quizLeaderboard` 하나, 값은 `{ "speed:한국사": [{ score, date }], ... }` 형식, 날짜는 `YYYY-MM-DD HH:MM`이다.
-- 사용자에게 보이는 한국어 문구: 열거에는 가운뎃점 대신 쉼표를 쓰고, 완결된 문장은 마침표로 끝내고, 버튼과 제목 같은 라벨에는 마침표를 붙이지 않고, 보조용언은 띄어 쓴다("확인해 주세요").
-- 새로 만드는 파일은 첫 줄에 생성 일시 주석을 단다. 일시는 `TZ=KST-9 date "+%Y-%m-%d %H:%M"`(Git Bash)로 확인하고 `2026-10-09 22:15 KST` 형식으로 쓴다. 아래 코드의 `<생성 일시>`는 이 명령의 결과로 바꿔 쓴다. 기존 파일을 고칠 때는 달지 않는다.
-- 커밋 메시지 끝에는 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` 줄을 붙인다.
+- 앱 파일은 `index.html`, `style.css`, `script.js`, `questions.js` 4개뿐입니다. 테스트 파일, JSON, 이미지 같은 파일을 만들지 않습니다. 문서(`PRD.md`, `IMPL-PLAN.md`, `QUESTION-REVIEW.md`)와 `.gitignore`는 앱 파일이 아닙니다.
+- `file://`로 열어 동작해야 합니다. `fetch`, `import`나 `export`, `<script type="module">`을 쓰지 않습니다. `index.html`은 `questions.js`를 `script.js`보다 먼저 불러옵니다.
+- 카테고리는 `한국사`, `세계지리`, `과학`, `예술과 문화`이고, 카테고리마다 10문항, 모두 40문항입니다.
+- 점수: 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리거나 시간 초과면 0점입니다. 스피드 모드는 문항마다 15초입니다.
+- 순위표는 스피드와 힌트 모드만 대상입니다. 모드×카테고리별 상위 5건, 점수 내림차순, 같으면 먼저 세운 기록이 위입니다. 기록은 `{ name, score, date }`이고, 이름은 앞뒤 공백을 지운 뒤 1~12자입니다. localStorage 키는 `quizLeaderboard`입니다.
+- 화면 문구는 그대로 씁니다: `순위표에 기록되지 않음`, `문항 데이터에 오류가 있습니다. 개발자 도구(F12) 콘솔을 확인해 주세요.`, `이름을 입력해 주세요.`, `순위표에 기록했습니다.`, `이 브라우저에서는 순위표에 기록할 수 없습니다.`, `아직 기록이 없습니다.`
+- 문항 텍스트와 이름은 `textContent`로만 화면에 넣습니다. `innerHTML`을 쓰지 않습니다.
+- 폭 360px에서 가로 스크롤이 생기면 안 됩니다.
+- 한국어 문구: 열거에는 가운뎃점 대신 쉼표, 완결된 문장은 마침표, 라벨에는 마침표 없음, 보조용언은 띄어 씁니다.
+- 새로 만드는 파일은 첫 줄에 생성 일시 주석을 답니다(`TZ=KST-9 date "+%Y-%m-%d %H:%M"`, `2026-10-09 22:15 KST` 형식). 기존 파일에는 달지 않습니다.
+- 커밋 작성자는 이 저장소에만 설정된 `dkstjdus123 <331831451+dkstjdus123@users.noreply.github.com>`입니다. 커밋 메시지 끝에는 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`을 붙입니다.
+- 태스크마다 **점검 명령**이 기대한 결과로 끝난 뒤에, 그 태스크에서 바꾼 파일만 커밋합니다.
+- 각 단계의 마지막 태스크에서 **실행을 멈추고** 보고합니다. 사용자가 탐색기에서 `index.html`을 더블클릭해 확인하고 승인한 뒤에만 병합, 배포, 다음 단계를 진행합니다.
 
-## 테스트와 확인 방법
+## 점검 명령
 
-- **규칙 함수**: 프로젝트 폴더에서 `node --test`를 실행한다. Node가 `tests/*.test.js`를 찾아 돌린다. `tests/helpers.js`는 이름이 테스트 패턴에 맞지 않아 테스트로 실행되지 않는다.
-- **화면**: `index.html`을 `file://`로 직접 연다. 앱 안 브라우저에서는 `file:///C:/Users/ckei/Desktop/5장%20실습/study03_quiz/index.html`로 이동한다. 앱 안 브라우저가 `file://` 주소를 열지 못하면, 로컬 서버로 대신하지 말고 사용자에게 파일을 직접 열어 확인 목록대로 눌러 봐 달라고 요청한다. `file://` 제약을 확인하는 것이 목적이기 때문이다.
-- 임시 문항은 정답 보기 글자가 항상 `정답 보기`라서, 섞인 뒤에도 어느 것이 정답인지 눈으로 알 수 있다.
+프로젝트 폴더에서 Git Bash로 실행합니다. `questions.js`와 `script.js`를 브라우저처럼 한 전역 공간에 차례로 불러오고, 주소에 `?test`가 붙은 것처럼 자체 점검을 돌립니다. 실패가 있거나 점검이 돌지 않으면 종료 코드가 1입니다.
+
+```bash
+node -e "const fs=require('fs'),vm=require('vm');const ctx=vm.createContext({console,location:{search:'?test'}});['questions.js','script.js'].forEach(f=>vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f}));process.exitCode=ctx.selfCheckFailed===0?0:1"
+```
+
+## 문항 검수 명령
+
+해설이 60자를 넘는 문항, 최상급 표현이 든 문제, 부정형 문제를 찾아 출력합니다. 출력된 최상급 문제는 기준과 시점이 문제 문장에 있는지 눈으로 확인합니다. 해설 60자 초과와 부정형은 0건이어야 합니다.
+
+```bash
+node -e "const fs=require('fs'),vm=require('vm');const ctx=vm.createContext({});vm.runInContext(fs.readFileSync('questions.js','utf8')+';globalThis.list=QUESTIONS;',ctx);ctx.list.forEach(q=>{if(q.explanation.length>60)console.log('해설 60자 초과:',q.id,q.explanation.length);if(/가장|최초|최대|최소|최고|최다|최장/.test(q.question))console.log('최상급 확인:',q.id,q.question);if(/아닌 것|않은 것/.test(q.question))console.log('부정형:',q.id,q.question)})"
+```
+
+## 화면 확인 방법 (Claude)
+
+앱 안 브라우저는 `file://` 페이지의 스크립트를 실행하지 못합니다. Claude는 `.claude/launch.json`의 `quiz-static`(`python -m http.server 8123`)을 `preview_start`로 띄워 `http://localhost:8123/`에서 확인합니다. `file://` 확인은 사용자가 단계마다 더블클릭으로 합니다.
 
 ## Review Focus
 
-PRD가 직접 말하지 않지만 사용자가 실제로 겪기 쉬운 문제 5가지와, 각각을 확인하는 곳이다.
+PRD가 직접 말하지 않지만 사용자가 겪기 쉬운 경우와, 그것을 확인하는 곳입니다.
 
-1. **같은 문항에 답이 두 번 들어감**(보기를 연달아 누름, 스피드 모드에서 0초가 되는 순간 보기를 누름): 첫 답만 반영해야 한다. → Task 3 테스트 "이미 답한 문항에 다시 답하면 무시한다"
-2. **스피드 타이머가 화면을 떠난 뒤에도 돎**(결과 화면으로 넘어간 뒤, [다시 하기]로 새 판을 시작한 직후): 퀴즈 화면을 떠나면 타이머가 멈추고, 새 문항은 언제나 15초부터 세야 한다. → Task 6 브라우저 확인 6, 7
-3. **사용자가 `questions.js`를 고치다 문법 오류를 냄**: 빈 화면 대신 "문항 파일(questions.js)을 읽지 못했습니다." 안내가 보여야 한다. → Task 4 브라우저 확인 9
-4. **localStorage를 쓸 수 없거나 값이 깨짐**(사생활 보호 설정, 직접 고친 값): 앱이 멈추지 않고 빈 순위표로 시작하며, 저장하지 못했으면 결과 화면에 알려야 한다. → Task 8 테스트 "저장소를 쓸 수 없어도 멈추지 않는다", "loadBoard는 ... 깨져 있으면", Task 9 브라우저 확인 6
-5. **다시 풀기를 여러 회차 한 뒤 [다시 하기]를 누름**: 남은 오답 판이 아니라 처음 카테고리의 10문항으로 새 판을 시작하고, 회차 표시도 사라져야 한다. → Task 7 브라우저 확인 6
+1. **이름 칸에 공백만 넣고 기록을 누름**: 기록되지 않고 "이름을 입력해 주세요."가 나와야 합니다. → Task 13 `cleanName` 점검, Task 15 확인 항목
+2. **[순위표에 기록]을 연달아 누르거나 Enter를 두 번 누름**: 한 번만 기록되어야 합니다. → Task 15 확인 항목
+3. **이전 버전에서 저장된 이름 없는 기록이 남아 있음**: 순위표에 "undefined" 대신 그 기록이 빠져야 합니다. → Task 13 `recordsFor` 점검
+4. **`http://`로 시작하는 출처 주소**: 문항 검사에서 걸러져야 합니다. → Task 2 점검
+5. **문항 데이터 오류가 있을 때**: [시작]은 막히지만 [순위표]는 열려야 합니다. → Task 3 확인
 
 ---
 
 ## 파일 구조
 
-| 파일 | 만드는 Task | 역할 |
+| 파일 | 바뀌는 태스크 | 역할 |
 |---|---|---|
-| `questions.js` | 1 | 문항 데이터 `QUESTIONS`만 둔다. 지금은 임시 문항 40개다. |
-| `script.js` | 1에서 만들고 2~9에서 고침 | 위쪽 `// ===== 규칙 =====`: 순수 함수. 아래쪽 `// ===== 화면 =====`: DOM 처리. 맨 끝: Node 테스트용 `module.exports` |
-| `index.html` | 4에서 만들고 6, 7, 9에서 고침 | 시작, 퀴즈, 결과, 순위표 화면의 `<section>` |
-| `style.css` | 4에서 만들고 6, 9에서 고침 | 모양 |
-| `tests/helpers.js` | 1 | 테스트 도우미: `loadQuestions`, `makeQuestion`, `makeValidSet` |
-| `tests/questions.test.js` | 1 | 문항 형식 검사 테스트 |
-| `tests/round.test.js` | 2 | 섞기와 판 준비 테스트 |
-| `tests/scoring.test.js` | 3 | 판 진행과 채점 테스트 |
-| `tests/hint-timer.test.js` | 5 | 힌트와 남은 시간 테스트 |
-| `tests/leaderboard.test.js` | 8 | 순위표 테스트 |
-
-`script.js`의 최종 모양은 다음 순서다. 규칙 함수를 새로 넣을 때는 `// ===== 화면 =====` 줄 바로 위에(그 줄이 아직 없으면 `module.exports` 블록 바로 위에) 넣는다.
-
-```
-// 생성 일시, 파일 설명
-// ===== 규칙 =====
-상수, validateQuestions, isFilled                       (Task 1)
-shuffle, prepareQuestion, prepareRound                  (Task 2)
-scoreAnswer, formatScore, createRound, answerCurrent,
-goNext, roundScore, correctCount, wrongQuestions        (Task 3)
-useHint, SPEED_SECONDS, remainingSeconds                (Task 5)
-LEADERBOARD_*, RANKED_MODES, boardKey, recordsFor,
-addRecord, loadBoard, saveBoard, formatDate             (Task 8)
-// ===== 화면 =====
-MODE_NAMES, app, byId, setUpPage, ...                   (Task 4, 6, 7, 9)
-if (typeof document !== "undefined") { setUpPage(); }
-if (typeof module !== "undefined") { module.exports = {...}; }
-```
+| `.gitignore` | 1 (새로 만듦) | `.claude/`를 저장소에서 뺌 |
+| `tests/` | 1 (지움) | 자체 점검으로 옮김 |
+| `script.js` | 1, 2, 3, 10, 13, 14 | 규칙, 자체 점검, 화면 |
+| `index.html` | 3, 14 | 화면 구조 |
+| `style.css` | 14 | 이름 입력 칸 모양 |
+| `questions.js` | 4~7 | 문항 40개 |
+| `QUESTION-REVIEW.md` | 4~7 (새로 만듦) | 문항 검수표 |
 
 ---
 
-## 1단계: 연습 모드와 점수
+# 1단계: 연습 모드와 점수 (+ 공통 기반 정리)
 
-### Task 1: 저장소 준비, 문항 형식 검사, 임시 문항
+**만들 것**
+- `script.js` 자체 점검 구역(섞기, 점수, 문항 검사)과 점검 명령. `tests/` 폴더와 `module.exports`는 없앰
+- 문항 검사 강화(보기 중복, `https://`만 허용)
+- 문항 데이터 오류의 화면 표시와 [시작] 막기
+- 출처 규칙에 맞게 다시 확인한 문항 40개와 `QUESTION-REVIEW.md` 검수표
+- `.gitignore`
+
+**완료 기준**
+- [ ] 점검 명령이 종료 코드 0, `자체 점검 결과: 통과 20, 실패 0`으로 끝난다.
+- [ ] 문항 검수 명령에 해설 60자 초과와 부정형이 0건이고, 최상급 문제는 모두 기준과 시점이 있다.
+- [ ] 출처 40개 중 위키백과, 나무위키, 블로그, 커뮤니티가 0건이다.
+- [ ] 교수님 저장소 문항과 같은 사실을 묻는 문항이 0건이다.
+- [ ] `tests/` 폴더가 없다.
+
+**브라우저에서 직접 확인할 항목** (탐색기에서 `index.html`을 더블클릭해서 엽니다)
+- [ ] 시작 화면에 모드 3개, 카테고리 4개, [시작], [순위표]가 보이고, 연습을 고르면 "순위표에 기록되지 않음"이 보인다. 빨간 오류 문구는 없다.
+- [ ] 연습, 한국사로 시작하면 상단에 "연습 모드, 한국사", "1 / 10", "점수 0"이 보인다.
+- [ ] 정답을 고르면 그 보기가 초록색이 되고 "정답입니다.", 해설 한 줄, 출처 링크가 보인다.
+- [ ] 오답을 고르면 고른 보기는 빨간색, 정답 보기는 초록색이 되고 "오답입니다."가 보인다.
+- [ ] 답을 고른 뒤 다른 보기를 눌러도 아무 변화가 없다.
+- [ ] 출처 링크를 누르면 새 탭에서 기관 페이지(위키백과가 아님)가 열린다.
+- [ ] 마지막 문항에서는 버튼이 [결과 보기]로 바뀐다.
+- [ ] 결과 화면의 점수가 실제로 맞힌 개수와 같고, "순위표에 기록되지 않음"이 보인다.
+- [ ] [다시 하기]를 누르면 문항 순서와 보기 순서가 앞 판과 다르고, [처음으로]를 누르면 시작 화면으로 간다.
+- [ ] 개발자 도구(F12)의 기기 툴바로 폭을 360px로 줄여도 가로 스크롤이 생기지 않는다.
+- [ ] 주소 끝에 `?test`를 붙여 다시 열면 콘솔에 "자체 점검 결과: 통과 20, 실패 0"이 나온다.
+- [ ] 네 카테고리를 한 판씩 풀면서 문제, 정답, 해설에 어색하거나 틀린 곳이 없는지 `QUESTION-REVIEW.md`와 함께 본다.
+
+### Task 1: 단계 브랜치, `.gitignore`, 자체 점검 틀로 옮기기
 
 **Files:**
-- Create: `script.js`, `questions.js`, `tests/helpers.js`, `tests/questions.test.js`
-- Commit: `PRD.md`, `docs/superpowers/plans/2026-10-09-quiz-app.md`(이 문서)
+- Create: `.gitignore`
+- Delete: `tests/` (5개 파일)
+- Modify: `script.js` (3번째 줄 주석, `// ===== 화면 =====` 위에 자체 점검 구역 추가, 맨 끝 실행부)
 
 **Interfaces:**
-- Consumes: 없음
-- Produces:
-  - `CATEGORIES: string[]` = `["한국사", "세계지리", "과학", "예술과 문화"]`
-  - `validateQuestions(questions: any): string[]` 문제마다 완결된 문장 하나. 문제가 없으면 `[]`
-  - 전역 `QUESTIONS: Array<{ id, category, question, choices: string[4], answer: 0..3, explanation, source }>`
-  - `tests/helpers.js`: `loadQuestions(): QUESTIONS`, `makeQuestion(overrides?): 문항`(정답은 0번 `"정답"`), `makeValidSet(): 문항[40]`(id는 `c0-1`~`c3-10`)
+- Consumes: 기존 규칙 함수 `shuffle`, `prepareQuestion`, `prepareRound`, `scoreAnswer`, `formatScore`, `createRound`, `answerCurrent`, `goNext`, `roundScore`, `correctCount`, `wrongQuestions`, `validateQuestions`, 화면 구역의 `readQuestions()`
+- Produces: `check(name, fn)`, `expectEqual(actual, expected)`, `runSelfChecks(): number`(실패 수), `sampleQuestion(overrides)`, `sampleQuestionSet()`, `sampleRound(mode, count)`, `validateWithFirst(overrides)`, 전역 `selfCheckFailed`
 
-- [ ] **Step 1: git 저장소를 만들고 문서를 커밋한다**
+- [ ] **Step 1: 단계 브랜치를 만든다**
 
 ```bash
-git init
-git add PRD.md docs/superpowers/plans/2026-10-09-quiz-app.md
-git commit -m "docs: PRD와 구현 계획 추가" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git switch -c stage-1
 ```
 
-git 사용자 이름이나 이메일이 설정되지 않아 커밋이 실패하면, 임의로 설정하지 말고 사용자에게 알린다.
+- [ ] **Step 2: `.gitignore`를 만든다**
 
-- [ ] **Step 2: 테스트 도우미를 만든다**
+```
+# <생성 일시> KST
+# 이 PC에서만 쓰는 Claude 설정(화면 확인용 서버 설정 등)은 저장소에 올리지 않는다.
+.claude/
+```
 
-`tests/helpers.js`:
+- [ ] **Step 3: `script.js` 3번째 줄 주석을 바꾼다**
 
 ```js
-// <생성 일시> KST
-// 여러 테스트 파일이 함께 쓰는 도우미
+// "규칙" 부분은 화면 없이 동작하는 함수라서, 아래 "자체 점검"(index.html?test 또는 IMPL-PLAN.md의 점검 명령)으로 확인한다.
+```
 
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
+- [ ] **Step 4: `// ===== 화면 =====` 줄 바로 위에 자체 점검 구역을 넣는다**
 
-// questions.js는 브라우저용 데이터 파일이라 내보내기가 없다.
-// 파일을 따로 실행해서 QUESTIONS 값을 꺼낸다.
-function loadQuestions() {
-  const source = fs.readFileSync(path.join(__dirname, "..", "questions.js"), "utf8");
-  return vm.runInNewContext(`${source}\nQUESTIONS;`);
+```js
+// ===== 자체 점검 =====
+// index.html?test로 열거나 IMPL-PLAN.md의 점검 명령을 실행하면 아래 항목을 차례로 확인한다.
+// 항목마다 콘솔에 통과나 실패를 찍고, 마지막에 "자체 점검 결과: 통과 N, 실패 M"을 찍는다.
+
+const SELF_CHECKS = [];
+
+function check(name, fn) {
+  SELF_CHECKS.push({ name, fn });
 }
 
-// 형식이 올바른 문항 하나. 정답은 0번 보기 "정답"이다. 바꿀 칸만 overrides로 넘긴다.
-function makeQuestion(overrides = {}) {
+// 두 값을 JSON 문자열로 바꿔 비교한다. 다르면 기댓값과 실제 값을 담은 오류를 던진다.
+function expectEqual(actual, expected) {
+  const actualText = JSON.stringify(actual);
+  const expectedText = JSON.stringify(expected);
+  if (actualText !== expectedText) {
+    throw new Error(`기댓값 ${expectedText}, 실제 ${actualText}`);
+  }
+}
+
+// 모든 항목을 돌리고 실패 수를 돌려준다.
+function runSelfChecks() {
+  let passed = 0;
+  let failed = 0;
+  SELF_CHECKS.forEach(({ name, fn }) => {
+    try {
+      fn();
+      passed += 1;
+      console.log(`통과: ${name}`);
+    } catch (error) {
+      failed += 1;
+      console.error(`실패: ${name} (${error.message})`);
+    }
+  });
+  console.log(`자체 점검 결과: 통과 ${passed}, 실패 ${failed}`);
+  return failed;
+}
+
+// 점검용 문항. 정답은 0번 보기 "정답"이다. 바꿀 칸만 overrides로 넘긴다.
+function sampleQuestion(overrides = {}) {
   return {
     id: "q-01",
     category: "한국사",
@@ -134,1018 +184,187 @@ function makeQuestion(overrides = {}) {
     choices: ["정답", "오답1", "오답2", "오답3"],
     answer: 0,
     explanation: "해설",
-    source: "출처",
+    source: { name: "출처", url: "https://example.com" },
     ...overrides,
   };
 }
 
-// 카테고리마다 10개씩, 형식이 올바른 40문항. id는 c0-1 ~ c3-10이다.
-function makeValidSet() {
+// 카테고리마다 10개씩, 형식이 올바른 점검용 문항 40개. id는 c0-1 ~ c3-10이다.
+function sampleQuestionSet() {
   const list = [];
-  ["한국사", "세계지리", "과학", "예술과 문화"].forEach((category, c) => {
-    for (let n = 1; n <= 10; n += 1) {
-      list.push(makeQuestion({ id: `c${c}-${n}`, category }));
+  CATEGORIES.forEach((category, c) => {
+    for (let n = 1; n <= QUESTIONS_PER_CATEGORY; n += 1) {
+      list.push(sampleQuestion({ id: `c${c}-${n}`, category }));
     }
   });
   return list;
 }
 
-module.exports = { loadQuestions, makeQuestion, makeValidSet };
-```
+// 점검용 판. 문항의 정답은 모두 0번 보기다.
+function sampleRound(mode, count) {
+  const questions = [];
+  for (let n = 1; n <= count; n += 1) {
+    questions.push(sampleQuestion({ id: `q-${n}` }));
+  }
+  return createRound(mode, "한국사", questions);
+}
 
-- [ ] **Step 3: 실패하는 테스트를 쓴다**
+// 점검용 문항 40개 중 첫 문항만 바꿔서 문항 검사 결과를 돌려준다.
+function validateWithFirst(overrides) {
+  const set = sampleQuestionSet();
+  set[0] = sampleQuestion({ id: "c0-1", ...overrides });
+  return validateQuestions(set);
+}
 
-`tests/questions.test.js`:
+// --- 1단계: 섞기, 점수, 문항 검사 ---
 
-```js
-// <생성 일시> KST
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const { validateQuestions } = require("../script.js");
-const { loadQuestions, makeQuestion, makeValidSet } = require("./helpers.js");
-
-test("형식이 올바른 40문항이면 경고가 없다", () => {
-  assert.deepEqual(validateQuestions(makeValidSet()), []);
-});
-
-test("배열이 아니면 경고한다", () => {
-  assert.deepEqual(validateQuestions(undefined), ["QUESTIONS가 배열이 아닙니다."]);
-});
-
-test("보기가 4개가 아니면 경고한다", () => {
-  const set = makeValidSet();
-  set[0] = makeQuestion({ id: "c0-1", choices: ["가", "나", "다"] });
-  assert.deepEqual(validateQuestions(set), ["c0-1: 보기가 4개가 아닙니다."]);
-});
-
-test("answer가 0~3 사이의 정수가 아니면 경고한다", () => {
-  for (const answer of [4, -1, 1.5, "0", undefined]) {
-    const set = makeValidSet();
-    set[0] = makeQuestion({ id: "c0-1", answer });
-    assert.deepEqual(
-      validateQuestions(set),
-      ["c0-1: answer는 0~3 사이의 정수여야 합니다."],
-      `answer: ${answer}`,
-    );
+check("shuffle은 원래 배열을 바꾸지 않고 같은 원소를 가진 새 배열을 돌려준다", () => {
+  const items = ["a", "b", "c", "d"];
+  const result = shuffle(items);
+  expectEqual(items, ["a", "b", "c", "d"]);
+  expectEqual(result.slice().sort(), ["a", "b", "c", "d"]);
+  if (result === items) {
+    throw new Error("원래 배열을 그대로 돌려주었습니다.");
   }
 });
 
-test("해설이나 출처가 비어 있으면 경고한다", () => {
-  const set = makeValidSet();
-  set[0] = makeQuestion({ id: "c0-1", explanation: "  " });
-  set[1] = makeQuestion({ id: "c0-2", source: "" });
-  assert.deepEqual(validateQuestions(set), [
-    "c0-1: 해설(explanation)이 비어 있습니다.",
-    "c0-2: 출처(source)가 비어 있습니다.",
-  ]);
+check("shuffle은 random 값에 따라 순서를 바꾼다", () => {
+  expectEqual(shuffle(["a", "b", "c", "d"], () => 0), ["b", "c", "d", "a"]);
+  expectEqual(shuffle(["a", "b", "c", "d"], () => 0.999), ["a", "b", "c", "d"]);
 });
 
-test("id가 비어 있거나 겹치면 경고한다", () => {
-  const set = makeValidSet();
-  set[0] = makeQuestion({ id: "" });
-  set[2] = makeQuestion({ id: "c0-2" });
-  assert.deepEqual(validateQuestions(set), [
-    "1번째 문항: id가 비어 있습니다.",
-    "c0-2: id가 다른 문항과 겹칩니다.",
-  ]);
+check("prepareQuestion은 보기를 섞고 정답 위치를 함께 옮긴다", () => {
+  const question = sampleQuestion();
+  const prepared = prepareQuestion(question, () => 0);
+  expectEqual(prepared.choices, ["오답1", "오답2", "오답3", "정답"]);
+  expectEqual(prepared.answer, 3);
+  expectEqual(question.choices, ["정답", "오답1", "오답2", "오답3"]);
 });
 
-test("카테고리가 4개 중 하나가 아니거나 개수가 10개가 아니면 경고한다", () => {
-  const set = makeValidSet();
-  set[0] = makeQuestion({ id: "c0-1", category: "역사" });
-  assert.deepEqual(validateQuestions(set), [
+check("prepareQuestion은 몇 번을 섞어도 정답 보기를 정확히 가리킨다", () => {
+  const question = sampleQuestion({ choices: ["오답1", "오답2", "정답", "오답3"], answer: 2 });
+  for (let i = 0; i < 200; i += 1) {
+    const prepared = prepareQuestion(question);
+    expectEqual(prepared.choices[prepared.answer], "정답");
+  }
+});
+
+check("prepareRound는 문항 순서와 보기 순서를 함께 섞는다", () => {
+  const questions = [1, 2, 3, 4].map((n) => sampleQuestion({ id: `q-${n}` }));
+  const round = prepareRound(questions, () => 0);
+  expectEqual(round.map((q) => q.id), ["q-2", "q-3", "q-4", "q-1"]);
+  round.forEach((q) => {
+    expectEqual(q.choices[q.answer], "정답");
+  });
+});
+
+check("scoreAnswer: 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리면 0점이다", () => {
+  expectEqual(
+    [scoreAnswer(true, false), scoreAnswer(true, true), scoreAnswer(false, false), scoreAnswer(false, true)],
+    [1, 0.5, 0, 0],
+  );
+});
+
+check("formatScore는 정수면 정수로, 0.5가 있으면 소수 한 자리로 보여 준다", () => {
+  expectEqual([formatScore(7), formatScore(7.5), formatScore(0), formatScore(10)], ["7", "7.5", "0", "10"]);
+});
+
+check("answerCurrent는 정답 여부와 점수를 기록하고, null은 시간 초과로 0점이다", () => {
+  const round = sampleRound("speed", 2);
+  expectEqual(answerCurrent(round, 0).points, 1);
+  goNext(round);
+  const timeout = answerCurrent(round, null);
+  expectEqual([timeout.correct, timeout.points], [false, 0]);
+});
+
+check("이미 답한 문항에 다시 답하면 무시한다", () => {
+  const round = sampleRound("speed", 3);
+  answerCurrent(round, 1);
+  expectEqual(answerCurrent(round, 0), null);
+  expectEqual(answerCurrent(round, null), null);
+  expectEqual([round.results.length, roundScore(round)], [1, 0]);
+});
+
+check("한 판의 점수, 맞힌 수, 틀린 문항을 세고, 마지막 문항 뒤 goNext는 false다", () => {
+  const round = sampleRound("hint", 4);
+  answerCurrent(round, 0);
+  goNext(round);
+  round.usedHint = true;
+  answerCurrent(round, 0);
+  goNext(round);
+  expectEqual(round.usedHint, false);
+  answerCurrent(round, 2);
+  goNext(round);
+  answerCurrent(round, null);
+  expectEqual(goNext(round), false);
+  expectEqual([roundScore(round), correctCount(round)], [1.5, 2]);
+  expectEqual(wrongQuestions(round).map((q) => q.id), ["q-3", "q-4"]);
+});
+
+check("validateQuestions: 형식이 올바른 40문항이면 경고가 없다", () => {
+  expectEqual(validateQuestions(sampleQuestionSet()), []);
+});
+
+check("validateQuestions: 배열이 아니면 경고한다", () => {
+  expectEqual(validateQuestions(undefined), ["QUESTIONS가 배열이 아닙니다."]);
+});
+
+check("validateQuestions: 보기가 4개가 아니면 경고한다", () => {
+  expectEqual(validateWithFirst({ choices: ["가", "나", "다"] }), ["c0-1: 보기가 4개가 아닙니다."]);
+});
+
+check("validateQuestions: answer가 0~3 사이의 정수가 아니면 경고한다", () => {
+  [4, -1, 1.5, "0", undefined].forEach((answer) => {
+    expectEqual(validateWithFirst({ answer }), ["c0-1: answer는 0~3 사이의 정수여야 합니다."]);
+  });
+});
+
+check("validateQuestions: 해설이 비어 있으면 경고한다", () => {
+  expectEqual(validateWithFirst({ explanation: "  " }), ["c0-1: 해설(explanation)이 비어 있습니다."]);
+});
+
+check("validateQuestions: id가 비어 있거나 겹치면 경고한다", () => {
+  const set = sampleQuestionSet();
+  set[0] = sampleQuestion({ id: "" });
+  set[2] = sampleQuestion({ id: "c0-2" });
+  expectEqual(validateQuestions(set), ["1번째 문항: id가 비어 있습니다.", "c0-2: id가 다른 문항과 겹칩니다."]);
+});
+
+check("validateQuestions: 카테고리가 4개 중 하나가 아니거나 개수가 10개가 아니면 경고한다", () => {
+  expectEqual(validateWithFirst({ category: "역사" }), [
     'c0-1: 카테고리 "역사"는 정해진 4개 중 하나가 아닙니다.',
     '카테고리 "한국사"의 문항이 9개입니다. 10개여야 합니다.',
   ]);
 });
 
-test("questions.js의 문항은 형식 검사를 통과한다", () => {
-  assert.deepEqual(validateQuestions(loadQuestions()), []);
+check("validateQuestions: 출처가 { name, url } 모양이 아니면 경고한다", () => {
+  const broken = [
+    "문자열 출처",
+    null,
+    { name: "", url: "https://example.com" },
+    { name: "출처", url: "" },
+    { name: "출처", url: "javascript:alert(1)" },
+  ];
+  broken.forEach((source) => {
+    expectEqual(validateWithFirst({ source }), [
+      "c0-1: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.",
+    ]);
+  });
+});
+
+check("questions.js의 실제 문항이 문항 검사를 통과한다", () => {
+  expectEqual(validateQuestions(readQuestions()), []);
 });
 ```
 
-- [ ] **Step 4: 테스트가 실패하는지 확인한다**
+- [ ] **Step 5: 맨 끝 실행부를 바꾸고 `module.exports`를 지운다**
 
-Run: `node --test`
-Expected: FAIL. `Cannot find module '../script.js'`
-
-- [ ] **Step 5: `script.js`에 형식 검사를 만든다**
-
-`script.js`:
+`script.js` 맨 끝의 `if (typeof document !== "undefined") { setUpPage(); }`부터 `module.exports` 블록 끝까지를 다음으로 바꾼다.
 
 ```js
-// <생성 일시> KST
-// 상식 퀴즈의 규칙과 화면 동작.
-// "규칙" 부분은 화면 없이 동작하는 함수라서 Node 테스트(tests 폴더)로 검사한다.
-
-// ===== 규칙 =====
-
-const CATEGORIES = ["한국사", "세계지리", "과학", "예술과 문화"];
-const QUESTIONS_PER_CATEGORY = 10;
-const CHOICE_COUNT = 4;
-
-// 문항 데이터의 형식 문제를 찾아 문장 목록으로 돌려준다. 문제가 없으면 빈 배열이다.
-// 정답이 하나뿐인지, 최상급 표현에 기준과 시점이 있는지는 사람이 확인한다.
-function validateQuestions(questions) {
-  if (!Array.isArray(questions)) {
-    return ["QUESTIONS가 배열이 아닙니다."];
-  }
-  const messages = [];
-  const seenIds = new Set();
-  const counts = {};
-  CATEGORIES.forEach((category) => {
-    counts[category] = 0;
-  });
-
-  questions.forEach((q, i) => {
-    const label = q.id || `${i + 1}번째 문항`;
-    if (!q.id) {
-      messages.push(`${label}: id가 비어 있습니다.`);
-    } else if (seenIds.has(q.id)) {
-      messages.push(`${label}: id가 다른 문항과 겹칩니다.`);
-    }
-    seenIds.add(q.id);
-
-    if (CATEGORIES.includes(q.category)) {
-      counts[q.category] += 1;
-    } else {
-      messages.push(`${label}: 카테고리 "${q.category}"는 정해진 4개 중 하나가 아닙니다.`);
-    }
-    if (!Array.isArray(q.choices) || q.choices.length !== CHOICE_COUNT) {
-      messages.push(`${label}: 보기가 ${CHOICE_COUNT}개가 아닙니다.`);
-    }
-    if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer >= CHOICE_COUNT) {
-      messages.push(`${label}: answer는 0~${CHOICE_COUNT - 1} 사이의 정수여야 합니다.`);
-    }
-    if (!isFilled(q.explanation)) {
-      messages.push(`${label}: 해설(explanation)이 비어 있습니다.`);
-    }
-    if (!isFilled(q.source)) {
-      messages.push(`${label}: 출처(source)가 비어 있습니다.`);
-    }
-  });
-
-  CATEGORIES.forEach((category) => {
-    if (counts[category] !== QUESTIONS_PER_CATEGORY) {
-      messages.push(
-        `카테고리 "${category}"의 문항이 ${counts[category]}개입니다. ${QUESTIONS_PER_CATEGORY}개여야 합니다.`,
-      );
-    }
-  });
-  return messages;
-}
-
-function isFilled(text) {
-  return typeof text === "string" && text.trim() !== "";
-}
-
-// Node 테스트에서 규칙 함수를 불러 쓰기 위한 부분이다. 브라우저에는 module이 없어 실행되지 않는다.
-if (typeof module !== "undefined") {
-  module.exports = { CATEGORIES, validateQuestions };
-}
-```
-
-- [ ] **Step 6: questions.js만 없어서 실패하는지 확인한다**
-
-Run: `node --test`
-Expected: 7개 PASS, "questions.js의 문항은 형식 검사를 통과한다" 1개만 FAIL(`ENOENT`)
-
-- [ ] **Step 7: 임시 문항 40개로 `questions.js`를 만든다**
-
-아래 스크립트를 스크래치 폴더에 `make-temp-questions.js`로 저장하고, 프로젝트 폴더를 현재 폴더로 두고 한 번 실행한 뒤 스크립트는 지운다. 인자로 생성 일시를 넘긴다.
-
-```js
-// 임시 문항 40개로 questions.js를 만드는 일회용 스크립트
-const fs = require("node:fs");
-
-const categories = [
-  ["korean-history", "한국사"],
-  ["world-geography", "세계지리"],
-  ["science", "과학"],
-  ["arts-culture", "예술과 문화"],
-];
-const createdAt = process.argv[2];
-
-const items = [];
-for (const [prefix, name] of categories) {
-  for (let n = 1; n <= 10; n += 1) {
-    items.push([
-      "  {",
-      `    id: "${prefix}-${String(n).padStart(2, "0")}",`,
-      `    category: "${name}",`,
-      `    question: "${name} 임시 문항 ${n}",`,
-      '    choices: ["정답 보기", "오답 보기 1", "오답 보기 2", "오답 보기 3"],',
-      "    answer: 0,",
-      `    explanation: "${name} 임시 문항 ${n}의 해설입니다.",`,
-      '    source: "임시 출처"',
-      "  }",
-    ].join("\n"));
-  }
-}
-
-const lines = [
-  `// ${createdAt} KST`,
-  "// 문항 데이터. 형식과 작성 규칙은 PRD.md 4장을 따른다.",
-  "// 지금은 형식만 맞춘 임시 문항이다. 진짜 문항으로 바꿔 넣는다.",
-  "const QUESTIONS = [",
-  items.join(",\n"),
-  "];",
-  "",
-];
-fs.writeFileSync("questions.js", lines.join("\n"));
-```
-
-```bash
-node "<스크래치 폴더>/make-temp-questions.js" "$(TZ=KST-9 date '+%Y-%m-%d %H:%M')"
-```
-
-만들어진 `questions.js`의 첫 문항은 다음과 같아야 한다.
-
-```js
-const QUESTIONS = [
-  {
-    id: "korean-history-01",
-    category: "한국사",
-    question: "한국사 임시 문항 1",
-    choices: ["정답 보기", "오답 보기 1", "오답 보기 2", "오답 보기 3"],
-    answer: 0,
-    explanation: "한국사 임시 문항 1의 해설입니다.",
-    source: "임시 출처"
-  },
-```
-
-- [ ] **Step 8: 테스트가 모두 통과하는지 확인한다**
-
-Run: `node --test`
-Expected: 8개 모두 PASS
-
-- [ ] **Step 9: 커밋한다**
-
-```bash
-git add script.js questions.js tests/helpers.js tests/questions.test.js
-git commit -m "feat: 문항 형식 검사와 임시 문항 추가" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-```
-
-### Task 2: 문항과 보기 섞기
-
-**Files:**
-- Modify: `script.js` (규칙 부분 끝과 `module.exports`)
-- Create: `tests/round.test.js`
-
-**Interfaces:**
-- Consumes: `tests/helpers.js`의 `makeQuestion`
-- Produces:
-  - `shuffle(items: T[], random = Math.random): T[]` 새 배열. 원래 배열은 그대로
-  - `prepareQuestion(question, random = Math.random): 문항` 보기를 섞고 `answer`를 섞인 위치로 옮긴 사본
-  - `prepareRound(questions, random = Math.random): 문항[]` 문항 순서와 각 문항의 보기 순서를 섞은 사본
-
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
-
-`tests/round.test.js`:
-
-```js
-// <생성 일시> KST
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const { shuffle, prepareQuestion, prepareRound } = require("../script.js");
-const { makeQuestion } = require("./helpers.js");
-
-test("shuffle은 원래 배열을 바꾸지 않고 같은 원소를 가진 새 배열을 돌려준다", () => {
-  const items = ["a", "b", "c", "d"];
-  const result = shuffle(items);
-  assert.deepEqual(items, ["a", "b", "c", "d"]);
-  assert.notEqual(result, items);
-  assert.deepEqual([...result].sort(), ["a", "b", "c", "d"]);
-});
-
-test("shuffle은 random 값에 따라 순서를 바꾼다", () => {
-  assert.deepEqual(shuffle(["a", "b", "c", "d"], () => 0), ["b", "c", "d", "a"]);
-  assert.deepEqual(shuffle(["a", "b", "c", "d"], () => 0.999), ["a", "b", "c", "d"]);
-});
-
-test("prepareQuestion은 보기를 섞고 정답 위치를 함께 옮긴다", () => {
-  const question = makeQuestion();
-  const prepared = prepareQuestion(question, () => 0);
-  assert.deepEqual(prepared.choices, ["오답1", "오답2", "오답3", "정답"]);
-  assert.equal(prepared.answer, 3);
-  assert.equal(prepared.id, question.id);
-  assert.deepEqual(question.choices, ["정답", "오답1", "오답2", "오답3"]);
-  assert.equal(question.answer, 0);
-});
-
-test("prepareQuestion은 몇 번을 섞어도 정답 보기를 정확히 가리킨다", () => {
-  const question = makeQuestion({ choices: ["오답1", "오답2", "정답", "오답3"], answer: 2 });
-  for (let i = 0; i < 200; i += 1) {
-    const prepared = prepareQuestion(question);
-    assert.equal(prepared.choices[prepared.answer], "정답");
-  }
-});
-
-test("prepareRound는 문항 순서와 보기 순서를 함께 섞는다", () => {
-  const questions = [1, 2, 3, 4].map((n) => makeQuestion({ id: `q-${n}` }));
-  const round = prepareRound(questions, () => 0);
-  assert.deepEqual(round.map((q) => q.id), ["q-2", "q-3", "q-4", "q-1"]);
-  round.forEach((q) => {
-    assert.equal(q.choices[q.answer], "정답");
-  });
-  assert.deepEqual(questions.map((q) => q.id), ["q-1", "q-2", "q-3", "q-4"]);
-});
-```
-
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
-
-Run: `node --test tests/round.test.js`
-Expected: FAIL. `shuffle is not a function`
-
-- [ ] **Step 3: 섞기 함수를 만든다**
-
-`script.js`의 `module.exports` 블록 바로 위에 넣는다.
-
-```js
-// 피셔-예이츠 방식으로 섞은 새 배열을 돌려준다. 원래 배열은 그대로 둔다.
-// random은 테스트에서 결과를 정해 두려고 받는다.
-function shuffle(items, random = Math.random) {
-  const result = items.slice();
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-// 보기 순서를 섞은 문항 사본을 만든다. answer도 섞인 위치로 옮긴다.
-function prepareQuestion(question, random = Math.random) {
-  const order = shuffle(question.choices.map((_, i) => i), random);
-  return {
-    ...question,
-    choices: order.map((i) => question.choices[i]),
-    answer: order.indexOf(question.answer),
-  };
-}
-
-// 문항 순서와 각 문항의 보기 순서를 섞어 한 판을 준비한다.
-function prepareRound(questions, random = Math.random) {
-  return shuffle(questions, random).map((question) => prepareQuestion(question, random));
-}
-```
-
-`module.exports` 블록을 다음으로 바꾼다.
-
-```js
-if (typeof module !== "undefined") {
-  module.exports = { CATEGORIES, validateQuestions, shuffle, prepareQuestion, prepareRound };
-}
-```
-
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
-
-Run: `node --test`
-Expected: 13개 모두 PASS
-
-- [ ] **Step 5: 커밋한다**
-
-```bash
-git add script.js tests/round.test.js
-git commit -m "feat: 문항과 보기 섞기" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-```
-
-### Task 3: 판 진행과 채점
-
-**Files:**
-- Modify: `script.js` (규칙 부분 끝과 `module.exports`)
-- Create: `tests/scoring.test.js`
-
-**Interfaces:**
-- Consumes: `tests/helpers.js`의 `makeQuestion`
-- Produces:
-  - `scoreAnswer(correct: boolean, usedHint: boolean): 0 | 0.5 | 1`
-  - `formatScore(score: number): string` `7` → `"7"`, `7.5` → `"7.5"`
-  - `createRound(mode: "practice"|"speed"|"hint", category: string, questions: 문항[]): Round`
-    - `Round = { mode, category, questions, index: number, usedHint: boolean, results: Result[] }`
-  - `answerCurrent(round, chosenIndex: number | null): Result | null` `null`은 시간 초과. 이미 답한 문항이면 `null`
-    - `Result = { question, chosenIndex, correct: boolean, points: number }`
-  - `goNext(round): boolean` 다음 문항이 있으면 `true`. `usedHint`를 `false`로 되돌린다
-  - `roundScore(round): number`, `correctCount(round): number`, `wrongQuestions(round): 문항[]`
-
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
-
-`tests/scoring.test.js`:
-
-```js
-// <생성 일시> KST
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const {
-  scoreAnswer,
-  formatScore,
-  createRound,
-  answerCurrent,
-  goNext,
-  roundScore,
-  correctCount,
-  wrongQuestions,
-} = require("../script.js");
-const { makeQuestion } = require("./helpers.js");
-
-// 정답은 모두 0번 보기다.
-function makeRound(mode = "practice", count = 3) {
-  const questions = Array.from({ length: count }, (_, i) => makeQuestion({ id: `q-${i + 1}` }));
-  return createRound(mode, "한국사", questions);
-}
-
-test("scoreAnswer: 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리면 0점이다", () => {
-  assert.equal(scoreAnswer(true, false), 1);
-  assert.equal(scoreAnswer(true, true), 0.5);
-  assert.equal(scoreAnswer(false, false), 0);
-  assert.equal(scoreAnswer(false, true), 0);
-});
-
-test("formatScore는 정수면 정수로, 0.5가 있으면 소수 한 자리로 보여 준다", () => {
-  assert.equal(formatScore(7), "7");
-  assert.equal(formatScore(7.5), "7.5");
-  assert.equal(formatScore(0), "0");
-  assert.equal(formatScore(10), "10");
-});
-
-test("createRound는 첫 문항에서 시작한다", () => {
-  const round = makeRound("speed");
-  assert.equal(round.mode, "speed");
-  assert.equal(round.category, "한국사");
-  assert.equal(round.index, 0);
-  assert.equal(round.usedHint, false);
-  assert.deepEqual(round.results, []);
-});
-
-test("answerCurrent는 정답 여부와 점수를 기록한다", () => {
-  const round = makeRound();
-  const result = answerCurrent(round, 0);
-  assert.equal(result.correct, true);
-  assert.equal(result.points, 1);
-  assert.equal(result.chosenIndex, 0);
-  assert.equal(result.question.id, "q-1");
-  assert.equal(roundScore(round), 1);
-});
-
-test("answerCurrent에 null을 넘기면 시간 초과로 0점이다", () => {
-  const round = makeRound("speed");
-  const result = answerCurrent(round, null);
-  assert.equal(result.correct, false);
-  assert.equal(result.points, 0);
-  assert.equal(result.chosenIndex, null);
-});
-
-test("힌트를 쓴 문항을 맞히면 0.5점이다", () => {
-  const round = makeRound("hint");
-  round.usedHint = true;
-  assert.equal(answerCurrent(round, 0).points, 0.5);
-});
-
-test("이미 답한 문항에 다시 답하면 무시한다", () => {
-  const round = makeRound("speed");
-  answerCurrent(round, 1);
-  assert.equal(answerCurrent(round, 0), null);
-  assert.equal(answerCurrent(round, null), null);
-  assert.equal(round.results.length, 1);
-  assert.equal(roundScore(round), 0);
-});
-
-test("goNext는 다음 문항으로 넘기고 힌트 사용 여부를 되돌린다", () => {
-  const round = makeRound("hint", 2);
-  round.usedHint = true;
-  answerCurrent(round, 0);
-  assert.equal(goNext(round), true);
-  assert.equal(round.index, 1);
-  assert.equal(round.usedHint, false);
-  answerCurrent(round, 0);
-  assert.equal(goNext(round), false);
-});
-
-test("한 판의 점수, 맞힌 수, 틀린 문항을 센다", () => {
-  const round = makeRound("hint", 4);
-  answerCurrent(round, 0); // 1점
-  goNext(round);
-  round.usedHint = true;
-  answerCurrent(round, 0); // 0.5점
-  goNext(round);
-  answerCurrent(round, 2); // 오답
-  goNext(round);
-  answerCurrent(round, null); // 시간 초과
-  goNext(round);
-  assert.equal(roundScore(round), 1.5);
-  assert.equal(correctCount(round), 2);
-  assert.deepEqual(wrongQuestions(round).map((q) => q.id), ["q-3", "q-4"]);
-});
-```
-
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
-
-Run: `node --test tests/scoring.test.js`
-Expected: FAIL. `scoreAnswer is not a function`
-
-- [ ] **Step 3: 판 진행과 채점 함수를 만든다**
-
-`script.js`의 `module.exports` 블록 바로 위에 넣는다.
-
-```js
-// 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리거나 시간이 지나면 0점이다.
-function scoreAnswer(correct, usedHint) {
-  if (!correct) {
-    return 0;
-  }
-  return usedHint ? 0.5 : 1;
-}
-
-// 7은 "7"로, 7.5는 "7.5"로 보여 준다.
-function formatScore(score) {
-  return Number.isInteger(score) ? String(score) : score.toFixed(1);
-}
-
-// 한 판의 상태. mode는 "practice", "speed", "hint" 중 하나다.
-function createRound(mode, category, questions) {
-  return { mode, category, questions, index: 0, usedHint: false, results: [] };
-}
-
-// 지금 문항에 답한다. chosenIndex가 null이면 시간 초과다.
-// 이미 답한 문항이면(보기를 연달아 누름, 0초와 클릭이 겹침) 아무것도 하지 않고 null을 돌려준다.
-function answerCurrent(round, chosenIndex) {
-  if (round.results.length > round.index) {
-    return null;
-  }
-  const question = round.questions[round.index];
-  const correct = chosenIndex === question.answer;
-  const result = { question, chosenIndex, correct, points: scoreAnswer(correct, round.usedHint) };
-  round.results.push(result);
-  return result;
-}
-
-// 다음 문항으로 넘어간다. 남은 문항이 있으면 true를 돌려준다.
-function goNext(round) {
-  round.index += 1;
-  round.usedHint = false;
-  return round.index < round.questions.length;
-}
-
-function roundScore(round) {
-  return round.results.reduce((sum, result) => sum + result.points, 0);
-}
-
-function correctCount(round) {
-  return round.results.filter((result) => result.correct).length;
-}
-
-function wrongQuestions(round) {
-  return round.results.filter((result) => !result.correct).map((result) => result.question);
-}
-```
-
-`module.exports` 블록을 다음으로 바꾼다.
-
-```js
-if (typeof module !== "undefined") {
-  module.exports = {
-    CATEGORIES,
-    validateQuestions,
-    shuffle,
-    prepareQuestion,
-    prepareRound,
-    scoreAnswer,
-    formatScore,
-    createRound,
-    answerCurrent,
-    goNext,
-    roundScore,
-    correctCount,
-    wrongQuestions,
-  };
-}
-```
-
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
-
-Run: `node --test`
-Expected: 22개 모두 PASS
-
-- [ ] **Step 5: 커밋한다**
-
-```bash
-git add script.js tests/scoring.test.js
-git commit -m "feat: 판 진행과 채점 규칙" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-```
-
-### Task 4: 1단계 화면(연습 모드)
-
-**Files:**
-- Create: `index.html`, `style.css`
-- Modify: `script.js` (규칙 부분과 `module.exports` 사이에 화면 부분 추가)
-
-**Interfaces:**
-- Consumes: `CATEGORIES`, `validateQuestions`, `prepareRound`, `createRound`, `answerCurrent`, `goNext`, `roundScore`, `correctCount`, `formatScore`, 전역 `QUESTIONS`
-- Produces (뒤 Task가 고치는 화면 함수와 상태):
-  - `MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" }`
-  - `app = { mode, category, round }`
-  - `byId(id)`, `setUpPage()`, `makeOptionButtons(containerId, values, labelOf, onSelect)`, `markSelected(containerId, selectedValue)`, `updateStartScreen()`, `showScreen(id)`, `startNewRound()`, `showQuestion()`, `handleAnswer(chosenIndex)`, `showFeedback(result)`, `feedbackMessage(result)`, `nextQuestion()`, `showResult()`
-  - HTML id: `load-error`, `start-screen`, `category-buttons`, `start-notice`, `start-button`, `quiz-screen`, `round-label`, `progress`, `current-score`, `question-text`, `choices`, `feedback`, `feedback-result`, `feedback-explanation`, `feedback-source`, `next-button`, `result-screen`, `result-score`, `result-detail`, `result-notice`, `replay-button`, `home-button`
-
-1단계에는 모드 선택이 없다. `app.mode`는 `"practice"`로 고정되고, 시작 화면에서 카테고리를 고른 뒤 [시작]을 누른다. 화면 코드는 Node 테스트 대상이 아니므로 브라우저 확인으로 검증한다.
-
-- [ ] **Step 1: `index.html`을 만든다**
-
-```html
-<!-- <생성 일시> KST -->
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>상식 퀴즈</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main class="app">
-    <h1>상식 퀴즈</h1>
-    <p id="load-error" class="error" hidden>문항 파일(questions.js)을 읽지 못했습니다. 브라우저 콘솔에서 오류를 확인해 주세요.</p>
-
-    <!-- 시작 화면 -->
-    <section id="start-screen" class="screen">
-      <h2>카테고리</h2>
-      <div id="category-buttons" class="button-grid"></div>
-      <p id="start-notice" class="notice">순위표에 기록되지 않음</p>
-      <button id="start-button" class="primary" type="button">시작</button>
-    </section>
-
-    <!-- 퀴즈 화면 -->
-    <section id="quiz-screen" class="screen" hidden>
-      <p id="round-label" class="round-label"></p>
-      <div class="quiz-header">
-        <span id="progress"></span>
-        <span id="current-score"></span>
-      </div>
-      <p id="question-text" class="question"></p>
-      <div id="choices" class="choices"></div>
-      <div id="feedback" class="feedback" hidden>
-        <p id="feedback-result" class="feedback-result"></p>
-        <p id="feedback-explanation"></p>
-        <p id="feedback-source" class="source"></p>
-        <button id="next-button" class="primary" type="button">다음</button>
-      </div>
-    </section>
-
-    <!-- 결과 화면 -->
-    <section id="result-screen" class="screen" hidden>
-      <h2>결과</h2>
-      <p id="result-score" class="result-score"></p>
-      <p id="result-detail"></p>
-      <p id="result-notice" class="notice">순위표에 기록되지 않음</p>
-      <div class="actions">
-        <button id="replay-button" type="button">다시 하기</button>
-        <button id="home-button" type="button">처음으로</button>
-      </div>
-    </section>
-  </main>
-
-  <script src="questions.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
-```
-
-- [ ] **Step 2: `style.css`를 만든다**
-
-```css
-/* <생성 일시> KST */
-
-:root {
-  --bg: #f6f7fb;
-  --card: #ffffff;
-  --text: #1f2430;
-  --muted: #5d6475;
-  --line: #d9dce5;
-  --accent: #3157d5;
-  --correct: #1f7a45;
-  --correct-bg: #e3f5ea;
-  --wrong: #b42828;
-  --wrong-bg: #fdeaea;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-/* display를 지정한 요소도 hidden이면 숨긴다. */
-[hidden] {
-  display: none !important;
-}
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
-  line-height: 1.6;
-}
-
-.app {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 24px 16px 48px;
-}
-
-h1 {
-  font-size: 1.6rem;
-  margin: 0 0 16px;
-}
-
-h2 {
-  font-size: 1.1rem;
-  margin: 24px 0 8px;
-}
-
-button {
-  font: inherit;
-  padding: 10px 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--card);
-  color: var(--text);
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: default;
-}
-
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
-}
-
-.option[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #ffffff;
-}
-
-.primary {
-  width: 100%;
-  margin-top: 16px;
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 600;
-}
-
-.notice {
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.error {
-  color: var(--wrong);
-  font-weight: 600;
-}
-
-.round-label {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.quiz-header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--muted);
-}
-
-.question {
-  margin: 16px 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.choices {
-  display: grid;
-  gap: 8px;
-}
-
-.choice {
-  text-align: left;
-}
-
-.choice.correct {
-  border-color: var(--correct);
-  background: var(--correct-bg);
-  color: var(--correct);
-  font-weight: 600;
-}
-
-.choice.wrong {
-  border-color: var(--wrong);
-  background: var(--wrong-bg);
-  color: var(--wrong);
-}
-
-.feedback {
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--card);
-}
-
-.feedback p {
-  margin: 0 0 8px;
-}
-
-.feedback-result {
-  font-weight: 700;
-}
-
-.feedback-result.is-correct {
-  color: var(--correct);
-}
-
-.feedback-result.is-wrong {
-  color: var(--wrong);
-}
-
-.source {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.result-score {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 24px;
-}
-```
-
-- [ ] **Step 3: `script.js`에 화면 부분을 넣는다**
-
-규칙 부분의 마지막 함수(`wrongQuestions`)와 `module.exports` 블록 사이에 넣는다.
-
-```js
-// ===== 화면 =====
-// 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
-
-const MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" };
-
-// 지금 고른 모드와 카테고리, 진행 중인 판
-const app = {
-  mode: "practice",
-  category: CATEGORIES[0],
-  round: null,
-};
-
-function byId(id) {
-  return document.getElementById(id);
-}
-
-function setUpPage() {
-  // questions.js에 문법 오류가 있으면 QUESTIONS가 만들어지지 않는다.
-  if (typeof QUESTIONS === "undefined") {
-    byId("load-error").hidden = false;
-    byId("start-screen").hidden = true;
-    return;
-  }
-  validateQuestions(QUESTIONS).forEach((message) => {
-    console.warn(`[문항 검사] ${message}`);
-  });
-
-  makeOptionButtons("category-buttons", CATEGORIES, (category) => category, (category) => {
-    app.category = category;
-    updateStartScreen();
-  });
-  byId("start-button").addEventListener("click", startNewRound);
-  byId("next-button").addEventListener("click", nextQuestion);
-  byId("replay-button").addEventListener("click", startNewRound);
-  byId("home-button").addEventListener("click", () => showScreen("start-screen"));
-
-  updateStartScreen();
-}
-
-// 하나만 고를 수 있는 버튼 묶음을 만든다. values의 값마다 버튼 하나를 만든다.
-function makeOptionButtons(containerId, values, labelOf, onSelect) {
-  const container = byId(containerId);
-  values.forEach((value) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "option";
-    button.textContent = labelOf(value);
-    button.dataset.value = value;
-    button.addEventListener("click", () => onSelect(value));
-    container.append(button);
-  });
-}
-
-// 고른 버튼에만 aria-pressed="true"를 붙인다.
-function markSelected(containerId, selectedValue) {
-  byId(containerId).querySelectorAll("button").forEach((button) => {
-    button.setAttribute("aria-pressed", String(button.dataset.value === selectedValue));
-  });
-}
-
-function updateStartScreen() {
-  markSelected("category-buttons", app.category);
-}
-
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach((screen) => {
-    screen.hidden = screen.id !== id;
-  });
-}
-
-function startNewRound() {
-  const questions = QUESTIONS.filter((question) => question.category === app.category);
-  app.round = createRound(app.mode, app.category, prepareRound(questions));
-  showScreen("quiz-screen");
-  showQuestion();
-}
-
-function showQuestion() {
-  const round = app.round;
-  const question = round.questions[round.index];
-  byId("round-label").textContent = `${MODE_NAMES[round.mode]} 모드, ${round.category}`;
-  byId("progress").textContent = `${round.index + 1} / ${round.questions.length}`;
-  byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
-  byId("question-text").textContent = question.question;
-
-  const choices = byId("choices");
-  choices.replaceChildren();
-  question.choices.forEach((text, i) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "choice";
-    button.textContent = text;
-    button.addEventListener("click", () => handleAnswer(i));
-    choices.append(button);
-  });
-  byId("feedback").hidden = true;
-}
-
-// chosenIndex가 null이면 시간 초과다.
-function handleAnswer(chosenIndex) {
-  const result = answerCurrent(app.round, chosenIndex);
-  if (!result) {
-    return; // 이미 답한 문항
-  }
-  showFeedback(result);
-}
-
-function showFeedback(result) {
-  const round = app.round;
-  byId("choices").querySelectorAll("button").forEach((button, i) => {
-    button.disabled = true;
-    if (i === result.question.answer) {
-      button.classList.add("correct");
-    } else if (i === result.chosenIndex) {
-      button.classList.add("wrong");
-    }
-  });
-
-  const resultLine = byId("feedback-result");
-  resultLine.textContent = feedbackMessage(result);
-  resultLine.className = result.correct ? "feedback-result is-correct" : "feedback-result is-wrong";
-  byId("feedback-explanation").textContent = result.question.explanation;
-  byId("feedback-source").textContent = `출처: ${result.question.source}`;
-  byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
-
-  const isLast = round.index === round.questions.length - 1;
-  byId("next-button").textContent = isLast ? "결과 보기" : "다음";
-  byId("feedback").hidden = false;
-  byId("next-button").focus();
-}
-
-function feedbackMessage(result) {
-  return result.correct ? "정답입니다." : "오답입니다.";
-}
-
-function nextQuestion() {
-  if (goNext(app.round)) {
-    showQuestion();
-  } else {
-    showResult();
-  }
-}
-
-function showResult() {
-  const round = app.round;
-  const total = round.questions.length;
-  const correct = correctCount(round);
-  byId("result-score").textContent = `${formatScore(roundScore(round))} / ${total}`;
-  byId("result-detail").textContent = `${total}문제 중 ${correct}개 맞힘, ${total - correct}개 틀림`;
-  byId("result-notice").hidden = round.mode !== "practice";
-  showScreen("result-screen");
+// index.html?test로 열거나 점검 명령으로 실행하면 자체 점검을 돈다. 점검 명령은 selfCheckFailed(실패 수)를 읽는다.
+if (typeof location !== "undefined" && /[?&]test(&|=|$)/.test(location.search)) {
+  globalThis.selfCheckFailed = runSelfChecks();
 }
 
 if (typeof document !== "undefined") {
@@ -1153,652 +372,608 @@ if (typeof document !== "undefined") {
 }
 ```
 
-- [ ] **Step 4: Node 테스트가 여전히 통과하는지 확인한다**
-
-Run: `node --test`
-Expected: 22개 모두 PASS. 화면 부분은 `document`가 없어서 Node에서 실행되지 않는다.
-
-- [ ] **Step 5: 브라우저에서 확인한다 (PRD 8장 1단계 확인 목록)**
-
-`index.html`을 `file://`로 열고 다음을 확인한다.
-
-1. 콘솔에 `[문항 검사]` 경고와 오류가 없다.
-2. 카테고리 4개 버튼이 보이고, 처음에는 "한국사"가 선택되어 있다. 다른 카테고리를 누르면 선택 표시가 옮겨 간다.
-3. 각 카테고리로 시작하면 그 카테고리 문항("세계지리 임시 문항 3" 등)만 10개 나오고, 진행 표시가 `1 / 10`부터 `10 / 10`까지 오른다.
-4. 판을 끝내고 [다시 하기]로 두세 판 해 보면 문항 순서와 `정답 보기`의 위치가 판마다 바뀐다.
-5. `정답 보기`를 누르면 그 보기가 초록, "정답입니다."가 보이고 점수가 1 오른다. 다른 보기를 누르면 그 보기는 빨강, `정답 보기`는 초록, "오답입니다."가 보인다. 두 경우 모두 해설, "출처: 임시 출처", [다음]이 보이고 다른 보기는 눌리지 않는다.
-6. 마지막 문항에서는 버튼이 [결과 보기]이고, 결과 화면의 점수, 맞힌 수, 틀린 수가 실제와 맞는다(예: 7개 맞히면 `7 / 10`, "10문제 중 7개 맞힘, 3개 틀림").
-7. 시작 화면과 결과 화면에 "순위표에 기록되지 않음"이 보인다.
-8. [다시 하기]는 같은 카테고리로 새 판을, [처음으로]는 시작 화면을 보여 준다.
-9. (Review Focus 3) `questions.js`의 첫 문항에서 `},`의 쉼표를 지워 문법 오류를 낸 뒤 새로 고치면, "문항 파일(questions.js)을 읽지 못했습니다. 브라우저 콘솔에서 오류를 확인해 주세요."만 보인다. 확인 후 쉼표를 되돌린다.
-10. 첫 문항의 `choices`에서 보기 하나를 지우고 새로 고치면 콘솔에 `[문항 검사] korean-history-01: 보기가 4개가 아닙니다.`가 나온다. 확인 후 되돌린다.
-11. 창 폭을 375px로 줄여도 가로 스크롤 없이 읽고 누를 수 있다.
-
-9, 10을 되돌린 뒤 `node --test`가 22개 모두 PASS인지 다시 확인한다.
-
-- [ ] **Step 6: 커밋한다**
+- [ ] **Step 6: `tests/` 폴더를 지운다**
 
 ```bash
-git add index.html style.css script.js
-git commit -m "feat: 1단계 연습 모드 화면" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git rm -r -q tests
 ```
 
----
+- [ ] **Step 7: 점검 명령을 실행한다**
 
-## 2단계: 스피드 모드, 힌트 모드, 모드 선택, 틀린 문제 다시 풀기
+Run: 점검 명령
+Expected: 콘솔에 `통과: ...` 19줄과 `자체 점검 결과: 통과 19, 실패 0`, 종료 코드 0(`echo $?`가 `0`)
 
-### Task 5: 힌트와 남은 시간 규칙
+- [ ] **Step 8: 커밋한다**
+
+```bash
+git add .gitignore script.js tests
+git commit -m "feat: 테스트 파일을 script.js 자체 점검으로 옮김" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+### Task 2: 문항 검사 강화 (보기 중복, `https://`만 허용)
 
 **Files:**
-- Modify: `script.js` (`// ===== 화면 =====` 줄 바로 위, `module.exports`)
-- Create: `tests/hint-timer.test.js`
+- Modify: `script.js` (`validateQuestions`, `isValidSource`, 1단계 자체 점검)
 
 **Interfaces:**
-- Consumes: `shuffle`, `createRound`, `answerCurrent`, `tests/helpers.js`의 `makeQuestion`
-- Produces:
-  - `useHint(round, random = Math.random): number[] | null` 지울 오답 보기 위치 2개. 이미 힌트를 썼거나 답한 문항이면 `null`. 성공하면 `round.usedHint = true`
-  - `SPEED_SECONDS = 15`
-  - `remainingSeconds(deadline: number, now: number): number` 남은 초(올림), 지났으면 0
+- Consumes: Task 1의 `check`, `expectEqual`, `validateWithFirst`
+- Produces: 출처 오류 문구 `"<id>: 출처(source)에 name과 https://로 시작하는 url이 있어야 합니다."`, 보기 중복 문구 `"<id>: 보기 중에 같은 것이 있습니다."`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [ ] **Step 1: 점검 항목을 먼저 고친다**
 
-`tests/hint-timer.test.js`:
+`validateQuestions: 출처가 { name, url } 모양이 아니면 경고한다` 항목 전체를 다음으로 바꾼다.
 
 ```js
-// <생성 일시> KST
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const {
-  createRound,
-  answerCurrent,
-  useHint,
-  SPEED_SECONDS,
-  remainingSeconds,
-} = require("../script.js");
-const { makeQuestion } = require("./helpers.js");
+check("validateQuestions: 출처가 { name, url } 모양이 아니거나 https://가 아니면 경고한다", () => {
+  const broken = [
+    "문자열 출처",
+    null,
+    { name: "", url: "https://example.com" },
+    { name: "출처", url: "" },
+    { name: "출처", url: "http://example.com" },
+    { name: "출처", url: "javascript:alert(1)" },
+  ];
+  broken.forEach((source) => {
+    expectEqual(validateWithFirst({ source }), [
+      "c0-1: 출처(source)에 name과 https://로 시작하는 url이 있어야 합니다.",
+    ]);
+  });
+});
+```
 
-// 첫 문항은 정답이 0번, 둘째 문항은 정답이 1번이다.
-function makeHintRound() {
-  return createRound("hint", "한국사", [
-    makeQuestion({ id: "q-1" }),
-    makeQuestion({ id: "q-2", choices: ["오답1", "정답", "오답2", "오답3"], answer: 1 }),
+`validateQuestions: 보기가 4개가 아니면 경고한다` 항목 바로 아래에 넣는다.
+
+```js
+check("validateQuestions: 한 문항의 보기 중에 같은 것이 있으면 경고한다", () => {
+  expectEqual(validateWithFirst({ choices: ["정답", "오답", "오답", "오답3"] }), [
+    "c0-1: 보기 중에 같은 것이 있습니다.",
   ]);
-}
-
-test("useHint는 정답이 아닌 보기 2개의 위치를 돌려준다", () => {
-  const round = makeHintRound();
-  assert.deepEqual(useHint(round, () => 0), [2, 3]);
-  assert.equal(round.usedHint, true);
-});
-
-test("useHint는 어떤 경우에도 정답을 지우지 않는다", () => {
-  for (let i = 0; i < 200; i += 1) {
-    const round = makeHintRound();
-    round.index = 1;
-    const removed = useHint(round);
-    assert.equal(removed.length, 2);
-    assert.notEqual(removed[0], removed[1]);
-    assert.ok(!removed.includes(1));
-  }
-});
-
-test("useHint는 한 문항에 한 번만 쓸 수 있다", () => {
-  const round = makeHintRound();
-  useHint(round);
-  assert.equal(useHint(round), null);
-});
-
-test("답한 뒤에는 힌트를 쓸 수 없다", () => {
-  const round = makeHintRound();
-  answerCurrent(round, 0);
-  assert.equal(useHint(round), null);
-  assert.equal(round.usedHint, false);
-});
-
-test("힌트를 쓰고 맞히면 0.5점이다", () => {
-  const round = makeHintRound();
-  useHint(round);
-  assert.equal(answerCurrent(round, 0).points, 0.5);
-});
-
-test("스피드 모드 제한 시간은 15초다", () => {
-  assert.equal(SPEED_SECONDS, 15);
-});
-
-test("remainingSeconds는 남은 시간을 초 단위로 올림하고, 지났으면 0이다", () => {
-  assert.equal(remainingSeconds(15000, 0), 15);
-  assert.equal(remainingSeconds(15000, 1), 15);
-  assert.equal(remainingSeconds(15000, 1000), 14);
-  assert.equal(remainingSeconds(15000, 14999), 1);
-  assert.equal(remainingSeconds(15000, 15000), 0);
-  assert.equal(remainingSeconds(15000, 20000), 0);
 });
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [ ] **Step 2: 점검이 실패하는지 확인한다**
 
-Run: `node --test tests/hint-timer.test.js`
-Expected: FAIL. `useHint is not a function`
+Run: 점검 명령
+Expected: `실패:` 2줄(출처, 보기 중복), `자체 점검 결과: 통과 18, 실패 2`, 종료 코드 1
 
-- [ ] **Step 3: 힌트와 남은 시간 함수를 만든다**
+- [ ] **Step 3: 문항 검사를 고친다**
 
-`script.js`의 `// ===== 화면 =====` 줄 바로 위에 넣는다.
+`validateQuestions` 안의 보기 검사를 다음으로 바꾼다.
 
 ```js
-// 지금 문항에 힌트를 쓴다. 지울 오답 보기 2개의 위치를 돌려준다.
-// 이미 힌트를 썼거나 답한 문항이면 null을 돌려준다.
-function useHint(round, random = Math.random) {
-  if (round.usedHint || round.results.length > round.index) {
-    return null;
-  }
-  round.usedHint = true;
-  const answer = round.questions[round.index].answer;
-  const wrongChoices = [0, 1, 2, 3].filter((i) => i !== answer);
-  return shuffle(wrongChoices, random).slice(0, 2);
-}
-
-const SPEED_SECONDS = 15;
-
-// 마감 시각까지 남은 초(올림)를 돌려준다. 마감이 지났으면 0이다.
-// 마감 시각을 기준으로 계산하므로, 탭을 벗어나 타이머가 늦게 불려도 시간이 어긋나지 않는다.
-function remainingSeconds(deadline, now) {
-  return Math.max(0, Math.ceil((deadline - now) / 1000));
-}
+    if (!Array.isArray(q.choices) || q.choices.length !== CHOICE_COUNT) {
+      messages.push(`${label}: 보기가 ${CHOICE_COUNT}개가 아닙니다.`);
+    } else if (new Set(q.choices).size !== CHOICE_COUNT) {
+      messages.push(`${label}: 보기 중에 같은 것이 있습니다.`);
+    }
 ```
 
-`module.exports` 블록의 `wrongQuestions,` 다음 줄에 추가한다.
+출처 검사 문구를 다음으로 바꾼다.
 
 ```js
-    useHint,
-    SPEED_SECONDS,
-    remainingSeconds,
+    if (!isValidSource(q.source)) {
+      messages.push(`${label}: 출처(source)에 name과 https://로 시작하는 url이 있어야 합니다.`);
+    }
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+`isValidSource`의 주석과 정규식을 다음으로 바꾼다.
 
-Run: `node --test`
-Expected: 29개 모두 PASS
+```js
+// 출처는 { name, url } 모양이다. url은 화면에서 링크가 되므로 https://로 시작해야 한다.
+function isValidSource(source) {
+  return (
+    typeof source === "object" &&
+    source !== null &&
+    isFilled(source.name) &&
+    isFilled(source.url) &&
+    /^https:\/\//.test(source.url)
+  );
+}
+```
+
+- [ ] **Step 4: 점검이 통과하는지 확인한다**
+
+Run: 점검 명령
+Expected: `자체 점검 결과: 통과 20, 실패 0`, 종료 코드 0
 
 - [ ] **Step 5: 커밋한다**
 
 ```bash
-git add script.js tests/hint-timer.test.js
-git commit -m "feat: 힌트와 남은 시간 규칙" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add script.js
+git commit -m "feat: 문항 검사에 보기 중복과 https 출처 확인 추가" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-### Task 6: 모드 선택, 스피드 모드, 힌트 모드 화면
+### Task 3: 문항 데이터 오류를 시작 화면에 표시
 
 **Files:**
-- Modify: `index.html`, `style.css`, `script.js` (화면 부분)
+- Modify: `index.html` (22번째 줄 `start-error`)
+- Modify: `script.js` (`setUpPage`, `updateStartScreen`, `startNewRound`)
 
 **Interfaces:**
-- Consumes: Task 4의 화면 함수, `useHint`, `SPEED_SECONDS`, `remainingSeconds`
-- Produces:
-  - `app.timerId`, `app.deadline`
-  - `handleHint()`, `startTimer()`, `updateTimer()`, `stopTimer()`
-  - HTML id: `mode-buttons`, `timer`, `hint-button`
-  - `showScreen(id)`는 항상 타이머를 멈춘다(Task 7, 9도 이에 기댄다)
+- Consumes: `validateQuestions`, `readQuestions`
+- Produces: HTML id `data-error`. `start-error`는 없어짐(문항 검사가 카테고리마다 10개를 보장하므로 빈 카테고리 안내가 필요 없어짐)
 
-- [ ] **Step 1: `index.html`을 고친다**
-
-시작 화면의 `<h2>카테고리</h2>` 바로 위에 넣는다.
+- [ ] **Step 1: `index.html`의 `start-error` 줄을 바꾼다**
 
 ```html
-      <h2>모드</h2>
-      <div id="mode-buttons" class="button-grid"></div>
+      <p id="data-error" class="error" hidden>문항 데이터에 오류가 있습니다. 개발자 도구(F12) 콘솔을 확인해 주세요.</p>
 ```
 
-퀴즈 화면의 `quiz-header`를 다음으로 바꾼다.
+- [ ] **Step 2: `setUpPage`의 문항 검사 부분을 바꾼다**
 
-```html
-      <div class="quiz-header">
-        <span id="progress"></span>
-        <span id="timer" class="timer" hidden></span>
-        <span id="current-score"></span>
-      </div>
-```
-
-`<div id="choices" class="choices"></div>` 바로 아래에 넣는다.
-
-```html
-      <button id="hint-button" class="hint-button" type="button" hidden>힌트</button>
-```
-
-- [ ] **Step 2: `style.css` 끝에 추가한다**
-
-```css
-.timer {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.hint-button {
-  margin-top: 12px;
-}
-
-.choice.removed {
-  opacity: 0.35;
-  text-decoration: line-through;
-}
-```
-
-- [ ] **Step 3: `script.js` 화면 부분을 고친다**
-
-`app` 객체를 다음으로 바꾼다.
+`validateQuestions(QUESTIONS).forEach(...)` 세 줄을 다음으로 바꾼다.
 
 ```js
-// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머
-const app = {
-  mode: "practice",
-  category: CATEGORIES[0],
-  round: null,
-  timerId: null,
-  deadline: 0,
-};
-```
-
-`setUpPage`의 `makeOptionButtons("category-buttons", ...)` 호출 바로 위에 넣는다.
-
-```js
-  makeOptionButtons("mode-buttons", Object.keys(MODE_NAMES), (mode) => MODE_NAMES[mode], (mode) => {
-    app.mode = mode;
-    updateStartScreen();
+  const problems = validateQuestions(QUESTIONS);
+  problems.forEach((message) => {
+    console.warn(`[문항 검사] ${message}`);
   });
-```
-
-`setUpPage`의 `byId("next-button").addEventListener(...)` 줄 바로 아래에 넣는다.
-
-```js
-  byId("hint-button").addEventListener("click", handleHint);
-```
-
-`updateStartScreen`을 다음으로 바꾼다.
-
-```js
-function updateStartScreen() {
-  markSelected("mode-buttons", app.mode);
-  markSelected("category-buttons", app.category);
-  byId("start-notice").hidden = app.mode !== "practice";
-}
-```
-
-`showScreen`을 다음으로 바꾼다.
-
-```js
-// 화면을 바꿀 때는 언제나 스피드 모드 타이머를 멈춘다.
-function showScreen(id) {
-  stopTimer();
-  document.querySelectorAll(".screen").forEach((screen) => {
-    screen.hidden = screen.id !== id;
-  });
-}
-```
-
-`showQuestion`의 마지막 줄 `byId("feedback").hidden = true;` 바로 아래에 넣는다.
-
-```js
-
-  const hintButton = byId("hint-button");
-  hintButton.hidden = round.mode !== "hint";
-  hintButton.disabled = false;
-  byId("timer").hidden = round.mode !== "speed";
-  if (round.mode === "speed") {
-    startTimer();
+  // 문항 데이터에 오류가 있으면 [시작]을 막고 안내한다. 순위표는 볼 수 있다.
+  if (problems.length > 0) {
+    byId("data-error").hidden = false;
+    byId("start-button").disabled = true;
   }
 ```
 
-`handleAnswer`를 다음으로 바꾼다.
+- [ ] **Step 3: 빈 카테고리 처리를 지운다**
+
+`updateStartScreen`에서 `byId("start-error").hidden = true;` 줄을 지운다. `startNewRound`에서 다음 네 줄을 지운다.
 
 ```js
-// chosenIndex가 null이면 시간 초과다.
-function handleAnswer(chosenIndex) {
-  const result = answerCurrent(app.round, chosenIndex);
-  if (!result) {
-    return; // 이미 답한 문항
-  }
-  stopTimer(); // 해설이 보이는 동안 타이머를 멈춘다.
-  byId("hint-button").disabled = true;
-  showFeedback(result);
-}
-```
-
-`feedbackMessage`를 다음으로 바꾼다.
-
-```js
-function feedbackMessage(result) {
-  if (result.chosenIndex === null) {
-    return "시간 초과로 오답입니다.";
-  }
-  if (!result.correct) {
-    return "오답입니다.";
-  }
-  return result.points === 0.5 ? "정답입니다. 힌트를 써서 0.5점입니다." : "정답입니다.";
-}
-```
-
-`handleAnswer` 바로 아래에 넣는다.
-
-```js
-function handleHint() {
-  const removed = useHint(app.round);
-  if (!removed) {
+  if (questions.length === 0) {
+    byId("start-error").hidden = false;
     return;
   }
-  const buttons = byId("choices").querySelectorAll("button");
-  removed.forEach((i) => {
-    buttons[i].disabled = true;
-    buttons[i].classList.add("removed");
-  });
-  byId("hint-button").disabled = true;
-}
-
-function startTimer() {
-  stopTimer();
-  app.deadline = Date.now() + SPEED_SECONDS * 1000;
-  updateTimer();
-  app.timerId = setInterval(updateTimer, 200);
-}
-
-function updateTimer() {
-  const left = remainingSeconds(app.deadline, Date.now());
-  byId("timer").textContent = `남은 시간 ${left}초`;
-  if (left === 0) {
-    stopTimer();
-    handleAnswer(null);
-  }
-}
-
-function stopTimer() {
-  clearInterval(app.timerId);
-  app.timerId = null;
-}
 ```
 
-- [ ] **Step 4: Node 테스트가 여전히 통과하는지 확인한다**
+- [ ] **Step 4: 점검 명령과 화면을 확인한다**
 
-Run: `node --test`
-Expected: 29개 모두 PASS
+Run: 점검 명령 → `통과 20, 실패 0`, 종료 코드 0
 
-- [ ] **Step 5: 브라우저에서 확인한다 (PRD 8장 2단계 확인 목록 중 모드 선택, 스피드, 힌트)**
+`quiz-static` 서버로 `http://localhost:8123/`을 열어 확인한다.
+1. 오류 문구가 보이지 않고 [시작]이 눌린다.
+2. `questions.js` 첫 문항의 `choices`에서 두 보기를 같은 글자로 바꾸고 새로 고치면, 빨간 오류 문구가 보이고 [시작]이 눌리지 않으며 [순위표]는 열린다. 콘솔에 `[문항 검사] korean-history-01: 보기 중에 같은 것이 있습니다.`가 나온다.
+3. `questions.js`를 되돌리고 `git diff questions.js`가 비어 있는지 확인한다.
 
-1. 시작 화면에 모드 3개(연습, 스피드, 힌트)와 카테고리 4개가 보이고, 처음에는 연습과 한국사가 선택되어 있다.
-2. "순위표에 기록되지 않음"은 연습을 골랐을 때만 보이고, 스피드나 힌트를 고르면 사라진다. 결과 화면에서도 연습 모드일 때만 보인다.
-3. 스피드: "남은 시간 15초"부터 줄어든다. 아무것도 누르지 않으면 0초에 "시간 초과로 오답입니다.", `정답 보기` 초록, 해설이 보이고 점수는 그대로다.
-4. 스피드: 답을 고르면 남은 시간 표시가 그 자리에서 멈춘다. [다음]을 누르면 "남은 시간 15초"부터 다시 센다.
-5. 스피드: 문항이 보이는 중에 다른 탭에 5초쯤 다녀오면, 남은 시간이 약 5초 줄어 있다.
-6. (Review Focus 2) 스피드 판을 끝내고 결과 화면에서 20초를 기다려도 아무 일이 없고, [다시 하기]를 누르면 첫 문항이 15초부터 센다.
-7. (Review Focus 2) 스피드 판에서 답을 고른 뒤 해설이 보이는 상태로 20초를 기다려도 "시간 초과"로 바뀌지 않고 점수도 그대로다.
-8. 힌트: [힌트] 버튼이 보인다. 누르면 오답 보기 2개가 흐려지고 줄이 그어지며 눌리지 않는다. `정답 보기`는 지워지지 않는다. [힌트] 버튼은 꺼진다.
-9. 힌트: 힌트를 쓰고 `정답 보기`를 누르면 "정답입니다. 힌트를 써서 0.5점입니다."가 보이고 점수가 0.5 오른다. 힌트 없이 맞히면 1점, 틀리면 0점이다. 결과 화면 점수가 `7.5 / 10`처럼 맞게 나온다.
-10. 힌트: 힌트를 쓰지 않고 답을 고르면 [힌트] 버튼이 꺼진다. 다음 문항에서는 다시 켜진다.
-11. 연습과 스피드에는 [힌트] 버튼이 없고, 연습과 힌트에는 남은 시간이 없다.
-
-- [ ] **Step 6: 커밋한다**
+- [ ] **Step 5: 커밋한다**
 
 ```bash
-git add index.html style.css script.js
-git commit -m "feat: 모드 선택, 스피드 모드, 힌트 모드" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add index.html script.js
+git commit -m "feat: 문항 데이터 오류를 시작 화면에 알리고 시작을 막음" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-### Task 7: 틀린 문제 다시 풀기
+### Task 4~7 공통: 문항 다시 확인과 검수표 작성 절차
+
+Task 4는 한국사, Task 5는 세계지리, Task 6은 과학, Task 7은 예술과 문화입니다. id(`korean-history-01` 등)와 형식은 그대로 둡니다.
+
+1. 카테고리의 문항 10개를 하나씩 봅니다. 아래 **교체 대상**은 교수님 저장소 문항과 같은 사실을 물으므로 다른 주제로 바꿉니다.
+   - 한국사: `korean-history-06`(직지심체요절), `korean-history-07`(임시 정부 수립 도시)
+   - 세계지리: `world-geography-04`(수에즈 운하)
+   - 과학: `science-06`(헤모글로빈), `science-10`(DNA 이중 나선)
+   - 예술과 문화: `arts-culture-07`(김홍도의 「서당」과 「씨름」)
+2. 문항마다 WebSearch로 기관 출처를 찾고, WebFetch로 **그 사실이 적힌 페이지**를 직접 열어 정답을 확인합니다.
+   - 쓸 출처: 우리역사넷(contents.history.go.kr), 한국민족문화대백과사전(encykorea.aks.ac.kr), 국가유산청(heritage.go.kr), 브리태니커(britannica.com), 유네스코(unesco.org, whc.unesco.org, ich.unesco.org), NASA, 정부나 국제기구 누리집, 미술관이나 박물관 공식 누리집
+   - 위키백과, 나무위키, 블로그, 커뮤니티 글은 쓰지 않습니다.
+   - 페이지를 열 수 없거나 내용이 확인되지 않으면 그 문항을 버리고 다른 주제로 바꿉니다.
+3. 문항을 고칩니다. 정답은 하나뿐이고 보기 4개는 서로 다릅니다. 부정형은 쓰지 않습니다. 최상급 표현에는 기준과 시점을 넣습니다. 해설은 정답 근거를 담은 60자 이내 한 줄입니다. 작성할 때 정답은 `choices`의 0번, `answer: 0`입니다.
+4. `source`에 `{ name: "기관이나 문서 이름", url: "https://사실이 적힌 페이지" }`를 적습니다.
+5. 교수님 저장소와 겹치는지 확인합니다. 아래 명령은 정답이 같은 문항을 나열합니다. 나열된 문항이 같은 사실을 묻고 있으면 바꿉니다.
+
+   ```bash
+   P="$(mktemp)"; gh api repos/logistex/Study03_Quiz/contents/questions.js -H "Accept: application/vnd.github.raw" > "$P"; node -e "const fs=require('fs'),vm=require('vm');const load=f=>vm.runInNewContext(fs.readFileSync(f,'utf8')+';QUESTIONS');const mine=load('questions.js'),other=load(process.argv[1]);mine.forEach(m=>other.filter(o=>o.choices[o.answer]===m.choices[m.answer]).forEach(o=>console.log(m.id,'|',m.question,'||',o.question)))" "$P"; rm -f "$P"
+   ```
+6. `QUESTION-REVIEW.md`의 해당 카테고리 표를 채웁니다. 열은 `id | 정답 | 출처에서 확인한 내용(한 줄) | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점`입니다. 해당 없는 칸은 `해당 없음`으로 적습니다.
+7. 점검 명령과 문항 검수 명령을 실행합니다. 점검은 `통과 20, 실패 0`이어야 하고, 검수 명령에 해설 60자 초과와 부정형이 없어야 합니다.
+8. 그 카테고리의 변경만 커밋합니다.
+
+### Task 4: 한국사 10문항
 
 **Files:**
-- Modify: `index.html`, `style.css`, `script.js` (화면 부분)
+- Modify: `questions.js` (첫머리 주석 3번째 줄, 한국사 10문항)
+- Create: `QUESTION-REVIEW.md`
 
-**Interfaces:**
-- Consumes: Task 4, 6의 화면 함수, `wrongQuestions`, `prepareRound`, `createRound`, `correctCount`
-- Produces:
-  - `app.firstRound`(처음 판), `app.retryNumber`(다시 풀기 회차, 처음 판은 0)
-  - `startRetry()`
-  - HTML id: `result-retry`, `all-cleared`, `retry-wrong-button`
-  - `showResult()`는 처음 판(`app.firstRound`) 점수를 보여 준다(Task 9가 이 함수를 이어서 고친다)
+- [ ] **Step 1: `QUESTION-REVIEW.md`를 만든다**
 
-- [ ] **Step 1: `index.html` 결과 화면을 고친다**
+```markdown
+<!-- <생성 일시> KST -->
 
-`<p id="result-notice" ...>` 바로 아래에 넣는다.
+# 문항 검수표
 
-```html
-      <p id="result-retry" hidden></p>
-      <p id="all-cleared" class="cleared" hidden>틀린 문제를 모두 맞혔습니다.</p>
+출처는 모두 기관 자료이며, 문항마다 그 사실이 적힌 페이지를 직접 열어 확인했습니다. 최종 검수는 사용자가 이 표와 함께 문항을 보며 합니다.
+
+## 한국사
+
+| id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
+|---|---|---|---|---|---|
+
+## 세계지리
+
+| id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
+|---|---|---|---|---|---|
+
+## 과학
+
+| id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
+|---|---|---|---|---|---|
+
+## 예술과 문화
+
+| id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
+|---|---|---|---|---|---|
 ```
 
-결과 화면 `actions`를 다음으로 바꾼다.
-
-```html
-      <div class="actions">
-        <button id="retry-wrong-button" type="button" hidden>틀린 문제 다시 풀기</button>
-        <button id="replay-button" type="button">다시 하기</button>
-        <button id="home-button" type="button">처음으로</button>
-      </div>
-```
-
-- [ ] **Step 2: `script.js` 화면 부분을 고친다**
-
-`app` 객체를 다음으로 바꾼다.
+- [ ] **Step 2: `questions.js` 첫머리 주석 3번째 줄을 바꾼다**
 
 ```js
-// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머, 다시 풀기 상태
-const app = {
-  mode: "practice",
-  category: CATEGORIES[0],
-  round: null,
-  timerId: null,
-  deadline: 0,
-  firstRound: null, // 다시 풀기를 해도 점수는 이 판 기준이다.
-  retryNumber: 0, // 0이면 처음 판, 1부터는 다시 풀기 회차
-};
+// 출처는 모두 기관 자료이며 <확인한 날짜>에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
 ```
 
-`setUpPage`의 `byId("replay-button").addEventListener(...)` 줄 바로 위에 넣는다.
+- [ ] **Step 3: 공통 절차 1~6으로 한국사 10문항을 고치고 검수표를 채운다** (교체 대상 `korean-history-06`, `korean-history-07`)
 
-```js
-  byId("retry-wrong-button").addEventListener("click", startRetry);
-```
+- [ ] **Step 4: 점검 명령과 문항 검수 명령을 실행한다**
 
-`startNewRound`를 다음으로 바꾸고, 그 아래에 `startRetry`를 넣는다.
+Expected: 점검 `통과 20, 실패 0`, 종료 코드 0. 검수 명령에 한국사 문항의 해설 60자 초과와 부정형 없음
 
-```js
-function startNewRound() {
-  const questions = QUESTIONS.filter((question) => question.category === app.category);
-  app.round = createRound(app.mode, app.category, prepareRound(questions));
-  app.firstRound = app.round;
-  app.retryNumber = 0;
-  showScreen("quiz-screen");
-  showQuestion();
-}
-
-// 바로 앞 판에서 틀린 문항만 순서와 보기를 다시 섞어서 푼다(연습 모드만).
-function startRetry() {
-  const wrong = wrongQuestions(app.round);
-  app.round = createRound("practice", app.round.category, prepareRound(wrong));
-  app.retryNumber += 1;
-  showScreen("quiz-screen");
-  showQuestion();
-}
-```
-
-`showQuestion`의 `byId("round-label").textContent = ...;` 줄을 다음으로 바꾼다.
-
-```js
-  const label = `${MODE_NAMES[round.mode]} 모드, ${round.category}`;
-  byId("round-label").textContent =
-    app.retryNumber > 0 ? `${label}, 다시 풀기 ${app.retryNumber}회차` : label;
-```
-
-`showResult`를 다음으로 바꾼다.
-
-```js
-function showResult() {
-  const first = app.firstRound;
-  const round = app.round;
-  const total = first.questions.length;
-  const correct = correctCount(first);
-  const scoreText = `${formatScore(roundScore(first))} / ${total}`;
-  byId("result-score").textContent = app.retryNumber > 0 ? `처음 점수 ${scoreText}` : scoreText;
-  byId("result-detail").textContent = `${total}문제 중 ${correct}개 맞힘, ${total - correct}개 틀림`;
-  byId("result-notice").hidden = round.mode !== "practice";
-
-  const retryLine = byId("result-retry");
-  retryLine.hidden = app.retryNumber === 0;
-  retryLine.textContent =
-    `다시 풀기 ${app.retryNumber}회차: ${round.questions.length}문제 중 ${correctCount(round)}개 맞힘`;
-
-  const remaining = wrongQuestions(round).length;
-  const retryButton = byId("retry-wrong-button");
-  retryButton.hidden = round.mode !== "practice" || remaining === 0;
-  retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
-  byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
-  showScreen("result-screen");
-}
-```
-
-- [ ] **Step 3: `style.css` 끝에 추가한다**
-
-```css
-.cleared {
-  color: var(--correct);
-  font-weight: 600;
-}
-```
-
-- [ ] **Step 4: Node 테스트가 여전히 통과하는지 확인한다**
-
-Run: `node --test`
-Expected: 29개 모두 PASS
-
-- [ ] **Step 5: 브라우저에서 확인한다 (PRD 8장 2단계 확인 목록 중 다시 풀기)**
-
-1. 연습 모드에서 3문항을 일부러 틀리고 끝내면, 결과는 `7 / 10`이고 [틀린 문제 다시 풀기]가 보인다.
-2. [틀린 문제 다시 풀기]를 누르면 틀린 3문항만 나오고, 위에 "연습 모드, 한국사, 다시 풀기 1회차"와 `1 / 3`이 보인다. 해설과 출처도 보인다.
-3. 그중 1문항을 또 틀리고 끝내면, 결과 화면에 "처음 점수 7 / 10", "10문제 중 7개 맞힘, 3개 틀림", "다시 풀기 1회차: 3문제 중 2개 맞힘"과 [남은 문제 다시 풀기]가 보인다.
-4. [남은 문제 다시 풀기]로 남은 1문항을 맞히면 "다시 풀기 2회차: 1문제 중 1개 맞힘", "틀린 문제를 모두 맞혔습니다."가 보이고 다시 풀기 버튼은 사라진다. 처음 점수는 여전히 `7 / 10`이다.
-5. 10문항을 모두 맞힌 연습 판에는 [틀린 문제 다시 풀기]도 "틀린 문제를 모두 맞혔습니다."도 없다.
-6. (Review Focus 5) 다시 풀기 2회차 결과에서 [다시 하기]를 누르면 같은 카테고리 10문항으로 새 판이 시작되고, 위의 회차 표시가 없다. 그 판의 결과 화면에도 회차 줄이 없다.
-7. 스피드 모드와 힌트 모드 결과 화면에는 틀린 문항이 있어도 [틀린 문제 다시 풀기]가 없다.
-
-- [ ] **Step 6: 커밋한다**
+- [ ] **Step 5: 커밋한다**
 
 ```bash
-git add index.html style.css script.js
-git commit -m "feat: 연습 모드 틀린 문제 다시 풀기" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add questions.js QUESTION-REVIEW.md
+git commit -m "content: 한국사 10문항 출처 재확인과 교체" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+### Task 5: 세계지리 10문항
+
+**Files:**
+- Modify: `questions.js` (세계지리 10문항), `QUESTION-REVIEW.md` (세계지리 표)
+
+- [ ] **Step 1: 공통 절차 1~6으로 세계지리 10문항을 고치고 검수표를 채운다** (교체 대상 `world-geography-04`)
+- [ ] **Step 2: 점검 명령과 문항 검수 명령을 실행한다**
+
+Expected: 점검 `통과 20, 실패 0`, 종료 코드 0. 검수 명령에 세계지리 문항의 해설 60자 초과와 부정형 없음. 최상급 문제(`world-geography-02`, `world-geography-03` 등)는 기준과 시점이 문제에 있음
+
+- [ ] **Step 3: 커밋한다**
+
+```bash
+git add questions.js QUESTION-REVIEW.md
+git commit -m "content: 세계지리 10문항 출처 재확인과 교체" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+### Task 6: 과학 10문항
+
+**Files:**
+- Modify: `questions.js` (과학 10문항), `QUESTION-REVIEW.md` (과학 표)
+
+- [ ] **Step 1: 공통 절차 1~6으로 과학 10문항을 고치고 검수표를 채운다** (교체 대상 `science-06`, `science-10`)
+- [ ] **Step 2: 점검 명령과 문항 검수 명령을 실행한다**
+
+Expected: 점검 `통과 20, 실패 0`, 종료 코드 0. 검수 명령에 과학 문항의 해설 60자 초과와 부정형 없음
+
+- [ ] **Step 3: 커밋한다**
+
+```bash
+git add questions.js QUESTION-REVIEW.md
+git commit -m "content: 과학 10문항 출처 재확인과 교체" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+### Task 7: 예술과 문화 10문항
+
+**Files:**
+- Modify: `questions.js` (예술과 문화 10문항), `QUESTION-REVIEW.md` (예술과 문화 표)
+
+- [ ] **Step 1: 공통 절차 1~6으로 예술과 문화 10문항을 고치고 검수표를 채운다** (교체 대상 `arts-culture-07`)
+- [ ] **Step 2: 점검 명령, 문항 검수 명령, 공통 절차 5의 겹침 확인을 40문항 전체에 대해 실행한다**
+
+Expected: 점검 `통과 20, 실패 0`. 검수 명령에 해설 60자 초과와 부정형 0건. 겹침 확인에서 같은 사실을 묻는 문항 0건. `grep -c "wikipedia\|namu.wiki\|blog" questions.js`가 `0`
+
+- [ ] **Step 3: 커밋한다**
+
+```bash
+git add questions.js QUESTION-REVIEW.md
+git commit -m "content: 예술과 문화 10문항 출처 재확인과 교체" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+### Task 8: 1단계 점검과 보고 (여기서 멈춤)
+
+- [ ] **Step 1: 점검 명령, 문항 검수 명령을 다시 실행하고 `git status`가 깨끗한지 확인한다**
+- [ ] **Step 2: `quiz-static` 서버로 1단계 "브라우저에서 직접 확인할 항목"을 Claude가 먼저 확인한다** (`http://localhost:8123/`, `?test` 포함, 360px는 `resize_window`로 확인한 뒤 원래대로 되돌림)
+- [ ] **Step 3: 보고하고 멈춘다**
+
+보고에는 다음을 넣습니다.
+- 점검 명령과 문항 검수 명령 결과
+- 바꾼 문항 목록(교체한 주제와 이유)과 `QUESTION-REVIEW.md` 링크
+- Claude가 확인한 항목과 확인하지 못한 항목. `file://` 더블클릭 확인은 사용자 몫이라고 밝힘
+- 사용자가 확인할 1단계 "브라우저에서 직접 확인할 항목" 목록
+
+**사용자가 "1단계 확인 끝났어"라고 하기 전에는 Task 9로 가지 않습니다.**
+
+### Task 9: 1단계 병합과 GitHub Pages 배포 (사용자 승인 뒤, 끝나면 멈춤)
+
+- [ ] **Step 1: GitHub의 기록이 이메일 정리 뒤의 기록인지 확인한다**
+
+```bash
+git fetch origin
+git log -1 --format='%ae' origin/main
+```
+
+Expected: `331831451+dkstjdus123@users.noreply.github.com`. 실제 이메일이 나오면 사용자가 아직 강제 푸시를 하지 않은 것이므로, 멈추고 사용자에게 알린다.
+
+- [ ] **Step 2: `stage-1`을 `main`에 병합한다**
+
+```bash
+git switch main
+git merge --no-ff stage-1 -m "Merge branch 'stage-1': 1단계 연습 모드와 점수, 공통 기반 정리" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+- [ ] **Step 3: 점검 명령을 실행한다** → `통과 20, 실패 0`
+- [ ] **Step 4: GitHub에 올린다**
+
+```bash
+git push origin main
+```
+
+- [ ] **Step 5: GitHub Pages를 켠다** (이미 켜져 있으면 409 응답이 나오며 그대로 둔다)
+
+```bash
+gh api -X POST repos/dkstjdus123/Study03_Quiz/pages -f "source[branch]=main" -f "source[path]=/"
+```
+
+- [ ] **Step 6: 빌드가 끝났는지 확인한다**
+
+```bash
+gh api repos/dkstjdus123/Study03_Quiz/pages/builds/latest --jq .status
+```
+
+Expected: `built`. `building`이면 잠시 뒤 다시 확인한다.
+
+- [ ] **Step 7: 배포 주소를 연다**: 앱 안 브라우저로 `https://dkstjdus123.github.io/Study03_Quiz/`와 `?test`를 열어 시작 화면과 `통과 20, 실패 0`을 확인한다.
+- [ ] **Step 8: 배포 주소를 보고하고 멈춘다.** 사용자가 2단계를 시작하라고 하기 전에는 Task 10으로 가지 않는다.
 
 ---
 
-## 3단계: 점수 저장과 순위표
+# 2단계: 스피드 모드, 힌트 모드, 모드 선택, 틀린 문제 다시 풀기
 
-### Task 8: 순위표 규칙
+**만들 것**
+- 자체 점검에 힌트와 남은 시간 항목 추가
+- 기능은 이미 있으므로 확인 항목대로 다시 점검하고, 어긋난 곳만 고침
+
+**완료 기준**
+- [ ] 점검 명령이 `자체 점검 결과: 통과 26, 실패 0`으로 끝난다.
+- [ ] PRD 8장 2단계 항목을 모두 만족한다.
+
+**브라우저에서 직접 확인할 항목** (`index.html` 더블클릭)
+- [ ] 시작 화면에서 모드를 바꾸면 "순위표에 기록되지 않음"은 연습을 골랐을 때만 보인다.
+- [ ] 스피드: 상단에 "남은 시간 15초"가 보이고 1초씩 줄어든다.
+- [ ] 스피드: 아무것도 누르지 않으면 0초에 "시간 초과로 오답입니다."가 나오고 정답 보기가 초록색이 된다. 점수는 그대로다.
+- [ ] 스피드: 답을 고르면 남은 시간이 그 자리에서 멈추고, [다음]을 누르면 15초부터 다시 센다.
+- [ ] 스피드: 결과 화면에서 20초를 기다려도 아무 일이 없고, [다시 하기]를 누르면 15초부터 센다.
+- [ ] 힌트: [힌트]를 누르면 오답 보기 2개가 흐려지고 눌리지 않으며, 정답은 지워지지 않는다. [힌트]는 꺼진다.
+- [ ] 힌트: 힌트를 쓰고 맞히면 "정답입니다. 힌트를 써서 0.5점입니다."가 나오고 점수가 0.5 오른다. 결과 점수가 `8.5 / 10`처럼 맞게 나온다.
+- [ ] 연습: 몇 문제를 틀리고 끝내면 [틀린 문제 다시 풀기]가 보이고, 누르면 틀린 문제만 나온다.
+- [ ] 연습: 다시 풀기 결과에 "처음 점수"는 그대로이고 "다시 풀기 1회차: n문제 중 m개 맞힘"이 따로 나온다. 남은 문제가 없을 때까지 반복할 수 있고, 다 맞히면 "틀린 문제를 모두 맞혔습니다."가 나온다.
+- [ ] 스피드와 힌트의 결과 화면에는 [틀린 문제 다시 풀기]가 없다.
+- [ ] `?test` 콘솔에 "자체 점검 결과: 통과 26, 실패 0"이 나온다.
+
+### Task 10: 힌트와 남은 시간 자체 점검 추가
 
 **Files:**
-- Modify: `script.js` (`// ===== 화면 =====` 줄 바로 위, `module.exports`)
-- Create: `tests/leaderboard.test.js`
+- Modify: `script.js` (자체 점검 구역, 1단계 항목 다음)
 
 **Interfaces:**
-- Consumes: 없음
-- Produces:
-  - `LEADERBOARD_KEY = "quizLeaderboard"`, `LEADERBOARD_SIZE = 10`, `RANKED_MODES = ["speed", "hint"]`
-  - `boardKey(mode, category): string` 예: `"speed:한국사"`
-  - `recordsFor(board, key): Array<{ score, date }>` 없거나 배열이 아니면 `[]`
-  - `addRecord(board, key, record): board` 새 객체. 점수 내림차순, 같은 점수는 먼저 넣은 기록이 위, 상위 10개
-  - `loadBoard(storage | null): board` 읽을 수 없으면 `{}`
-  - `saveBoard(storage | null, board): boolean` 저장했으면 `true`
-  - `formatDate(date: Date): string` `"YYYY-MM-DD HH:MM"`
+- Consumes: `createRound`, `answerCurrent`, `useHint`, `SPEED_SECONDS`, `remainingSeconds`, `sampleQuestion`, `check`, `expectEqual`
+- Produces: `sampleHintRound()`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [ ] **Step 1: 단계 브랜치를 만든다**
 
-`tests/leaderboard.test.js`:
+```bash
+git switch -c stage-2
+```
+
+- [ ] **Step 2: 1단계 점검 항목 마지막(`questions.js의 실제 문항이 ...`) 바로 아래에 넣는다**
 
 ```js
-// <생성 일시> KST
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const {
-  LEADERBOARD_KEY,
-  boardKey,
-  recordsFor,
-  addRecord,
-  loadBoard,
-  saveBoard,
-  formatDate,
-} = require("../script.js");
+// --- 2단계: 힌트, 남은 시간 ---
 
-// localStorage 대신 쓰는 가짜 저장소
-function fakeStorage(initial = {}) {
-  const data = { ...initial };
-  return {
+// 첫 문항은 정답이 0번, 둘째 문항은 정답이 1번인 힌트 모드 판
+function sampleHintRound() {
+  return createRound("hint", "한국사", [
+    sampleQuestion({ id: "q-1" }),
+    sampleQuestion({ id: "q-2", choices: ["오답1", "정답", "오답2", "오답3"], answer: 1 }),
+  ]);
+}
+
+check("useHint는 정답이 아닌 보기 2개의 위치를 돌려준다", () => {
+  const round = sampleHintRound();
+  expectEqual(useHint(round, () => 0), [2, 3]);
+  expectEqual(round.usedHint, true);
+});
+
+check("useHint는 어떤 경우에도 정답을 지우지 않는다", () => {
+  for (let i = 0; i < 200; i += 1) {
+    const round = sampleHintRound();
+    round.index = 1;
+    const removed = useHint(round);
+    if (removed.length !== 2 || removed[0] === removed[1] || removed.includes(1)) {
+      throw new Error(`지운 보기 ${JSON.stringify(removed)}`);
+    }
+  }
+});
+
+check("useHint는 한 문항에 한 번만, 답하기 전에만 쓸 수 있다", () => {
+  const first = sampleHintRound();
+  useHint(first);
+  expectEqual(useHint(first), null);
+  const second = sampleHintRound();
+  answerCurrent(second, 0);
+  expectEqual([useHint(second), second.usedHint], [null, false]);
+});
+
+check("힌트를 쓰고 맞히면 0.5점이다", () => {
+  const round = sampleHintRound();
+  useHint(round);
+  expectEqual(answerCurrent(round, 0).points, 0.5);
+});
+
+check("스피드 모드 제한 시간은 15초다", () => {
+  expectEqual(SPEED_SECONDS, 15);
+});
+
+check("remainingSeconds는 남은 시간을 초 단위로 올림하고, 지났으면 0이다", () => {
+  expectEqual(
+    [
+      remainingSeconds(15000, 0),
+      remainingSeconds(15000, 1),
+      remainingSeconds(15000, 1000),
+      remainingSeconds(15000, 14999),
+      remainingSeconds(15000, 15000),
+      remainingSeconds(15000, 20000),
+    ],
+    [15, 15, 14, 1, 0, 0],
+  );
+});
+```
+
+- [ ] **Step 3: 점검 명령을 실행한다**
+
+Expected: `자체 점검 결과: 통과 26, 실패 0`, 종료 코드 0. 기능은 이미 있으므로 처음부터 통과하는 것이 정상이다. 실패하면 그 기능의 코드를 PRD 6장에 맞게 고친 뒤 다시 실행한다.
+
+- [ ] **Step 4: 커밋한다**
+
+```bash
+git add script.js
+git commit -m "feat: 힌트와 남은 시간 자체 점검 추가" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+### Task 11: 2단계 점검과 보고 (여기서 멈춤)
+
+- [ ] **Step 1: `quiz-static` 서버로 2단계 "브라우저에서 직접 확인할 항목"을 Claude가 먼저 확인한다.** 어긋난 곳이 있으면 고치고, 점검 명령 `통과 26, 실패 0`을 확인한 뒤 `fix: <고친 내용>`으로 커밋한다.
+- [ ] **Step 2: 보고하고 멈춘다.** 점검 결과, Claude가 확인한 항목, 사용자가 확인할 2단계 항목 목록을 적는다. **사용자가 "2단계 확인 끝났어"라고 하기 전에는 Task 12로 가지 않는다.**
+
+### Task 12: 2단계 병합과 배포 (사용자 승인 뒤, 끝나면 멈춤)
+
+- [ ] **Step 1: 병합하고 점검한다**
+
+```bash
+git switch main
+git merge --no-ff stage-2 -m "Merge branch 'stage-2': 2단계 스피드, 힌트, 틀린 문제 다시 풀기" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+점검 명령 → `통과 26, 실패 0`
+
+- [ ] **Step 2: 올리고 배포를 확인한다**
+
+```bash
+git push origin main
+gh api repos/dkstjdus123/Study03_Quiz/pages/builds/latest --jq .status
+```
+
+Expected: `built`. 배포 주소의 `?test`에서 `통과 26, 실패 0`
+
+- [ ] **Step 3: 보고하고 멈춘다.** 사용자가 3단계를 시작하라고 하기 전에는 Task 13으로 가지 않는다.
+
+---
+
+# 3단계: 점수 저장과 순위표
+
+**만들 것**
+- 순위표 규칙: 상위 5건, 기록에 이름, 이름 정리 함수 `cleanName`
+- 결과 화면의 이름 입력과 [순위표에 기록], 순위표의 이름 열
+- 자체 점검에 순위표 항목 추가
+
+**완료 기준**
+- [ ] 점검 명령이 `자체 점검 결과: 통과 36, 실패 0`으로 끝난다.
+- [ ] PRD 7장과 8장 3단계 항목을 모두 만족한다.
+
+**브라우저에서 직접 확인할 항목** (`index.html` 더블클릭)
+- [ ] 시작 화면의 [순위표]를 누르면 스피드, 힌트 버튼과 카테고리 4개가 보이고, 기록이 없는 표에는 "아직 기록이 없습니다."가 보인다.
+- [ ] 스피드 판을 끝내면 결과 화면에 "이름(별명)" 입력 칸과 [순위표에 기록]이 보인다. 연습 판 결과 화면에는 보이지 않는다.
+- [ ] 이름을 비우거나 공백만 넣고 [순위표에 기록]을 누르면 "이름을 입력해 주세요."가 나오고 기록되지 않는다.
+- [ ] 이름을 넣고 누르거나 Enter를 누르면 "순위표에 기록했습니다."가 나오고 입력 칸과 버튼이 잠긴다. 여러 번 눌러도 한 번만 기록된다.
+- [ ] 순위표의 해당 표에 순위, 이름, 점수, 날짜가 보인다.
+- [ ] 같은 표에 기록을 6개 이상 쌓으면 점수가 높은 5개만 남고, 같은 점수는 먼저 세운 기록이 위다.
+- [ ] 기록하지 않고 [다시 하기]나 [처음으로]를 누른 판은 순위표에 없다.
+- [ ] 브라우저를 완전히 닫았다가 다시 열어도 기록이 남아 있다.
+- [ ] 폭 360px에서 결과 화면의 이름 입력 칸과 순위표가 가로 스크롤 없이 보인다.
+- [ ] `?test` 콘솔에 "자체 점검 결과: 통과 36, 실패 0"이 나온다.
+
+### Task 13: 순위표 규칙 (상위 5건, 이름)
+
+**Files:**
+- Modify: `script.js` (순위표 상수와 함수, 자체 점검 구역)
+
+**Interfaces:**
+- Consumes: `check`, `expectEqual`, `LEADERBOARD_KEY`, `boardKey`, `addRecord`, `loadBoard`, `saveBoard`, `formatDate`
+- Produces: `LEADERBOARD_SIZE = 5`, `NAME_MAX_LENGTH = 12`, `cleanName(text): string | null`, `recordsFor(board, key)`가 `name`이 문자열이고 `score`가 숫자인 기록만 돌려줌, 기록 모양 `{ name, score, date }`
+
+- [ ] **Step 1: 단계 브랜치를 만든다**
+
+```bash
+git switch -c stage-3
+```
+
+- [ ] **Step 2: 2단계 점검 항목 마지막 바로 아래에 순위표 점검을 넣는다**
+
+```js
+// --- 3단계: 순위표 ---
+
+check("boardKey는 모드와 카테고리를 합친다", () => {
+  expectEqual(boardKey("speed", "한국사"), "speed:한국사");
+});
+
+check("addRecord는 점수 높은 순으로 넣고 원래 순위표는 바꾸지 않는다", () => {
+  const empty = {};
+  const b1 = addRecord(empty, "speed:과학", { name: "가", score: 6, date: "d1" });
+  const b2 = addRecord(b1, "speed:과학", { name: "나", score: 9, date: "d2" });
+  const b3 = addRecord(b2, "speed:과학", { name: "다", score: 7.5, date: "d3" });
+  expectEqual(b3["speed:과학"].map((r) => r.name), ["나", "다", "가"]);
+  expectEqual([empty, b1["speed:과학"].length], [{}, 1]);
+});
+
+check("점수가 같으면 먼저 세운 기록이 위에 있다", () => {
+  let board = addRecord({}, "hint:과학", { name: "먼저", score: 8, date: "d1" });
+  board = addRecord(board, "hint:과학", { name: "나중", score: 8, date: "d2" });
+  expectEqual(board["hint:과학"].map((r) => r.name), ["먼저", "나중"]);
+});
+
+check("표마다 상위 5개만 남긴다", () => {
+  let board = {};
+  for (let score = 1; score <= 6; score += 1) {
+    board = addRecord(board, "speed:과학", { name: `n${score}`, score, date: `d${score}` });
+  }
+  expectEqual(board["speed:과학"].map((r) => r.score), [6, 5, 4, 3, 2]);
+});
+
+check("다른 표의 기록은 건드리지 않는다", () => {
+  const before = { "hint:한국사": [{ name: "가", score: 5, date: "d" }] };
+  const board = addRecord(before, "speed:한국사", { name: "나", score: 3, date: "e" });
+  expectEqual(board["hint:한국사"], [{ name: "가", score: 5, date: "d" }]);
+});
+
+check("recordsFor는 이름이나 점수가 없는 항목을 버린다", () => {
+  const board = {
+    "speed:과학": [null, 1, "x", { score: 3, date: "예전 기록" }, { name: "가", date: "d" }, { name: "나", score: 4, date: "d" }],
+  };
+  expectEqual(recordsFor(board, "speed:과학"), [{ name: "나", score: 4, date: "d" }]);
+  expectEqual(recordsFor({ "speed:과학": "깨진 값" }, "speed:과학"), []);
+});
+
+check("saveBoard로 저장한 순위표를 loadBoard로 다시 읽고, 깨진 값은 빈 순위표다", () => {
+  const data = {};
+  const storage = {
     getItem: (key) => (key in data ? data[key] : null),
     setItem: (key, value) => {
       data[key] = String(value);
     },
   };
-}
-
-test("저장 키는 quizLeaderboard다", () => {
-  assert.equal(LEADERBOARD_KEY, "quizLeaderboard");
+  const board = addRecord({}, "speed:과학", { name: "가", score: 7, date: "2026-10-09 21:50" });
+  expectEqual(saveBoard(storage, board), true);
+  expectEqual(loadBoard(storage), board);
+  ["{깨짐", "[1,2]", "null", "3"].forEach((broken) => {
+    data[LEADERBOARD_KEY] = broken;
+    expectEqual(loadBoard(storage), {});
+  });
 });
 
-test("boardKey는 모드와 카테고리를 합친다", () => {
-  assert.equal(boardKey("speed", "한국사"), "speed:한국사");
-});
-
-test("addRecord는 점수 높은 순으로 넣고 원래 순위표는 바꾸지 않는다", () => {
-  const empty = {};
-  const b1 = addRecord(empty, "speed:과학", { score: 6, date: "d1" });
-  const b2 = addRecord(b1, "speed:과학", { score: 9, date: "d2" });
-  const b3 = addRecord(b2, "speed:과학", { score: 7.5, date: "d3" });
-  assert.deepEqual(b3["speed:과학"].map((r) => r.score), [9, 7.5, 6]);
-  assert.deepEqual(empty, {});
-  assert.equal(b1["speed:과학"].length, 1);
-});
-
-test("점수가 같으면 먼저 세운 기록이 위에 있다", () => {
-  let board = addRecord({}, "hint:과학", { score: 8, date: "먼저" });
-  board = addRecord(board, "hint:과학", { score: 8, date: "나중" });
-  assert.deepEqual(board["hint:과학"].map((r) => r.date), ["먼저", "나중"]);
-});
-
-test("표마다 상위 10개만 남긴다", () => {
-  let board = {};
-  for (let score = 1; score <= 11; score += 1) {
-    board = addRecord(board, "speed:과학", { score, date: `d${score}` });
-  }
-  assert.deepEqual(board["speed:과학"].map((r) => r.score), [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]);
-  board = addRecord(board, "speed:과학", { score: 1, date: "낮은 점수" });
-  assert.equal(board["speed:과학"].length, 10);
-  assert.ok(!board["speed:과학"].some((r) => r.date === "낮은 점수"));
-});
-
-test("다른 표의 기록은 건드리지 않는다", () => {
-  const board = addRecord({ "hint:한국사": [{ score: 5, date: "d" }] }, "speed:한국사", { score: 3, date: "e" });
-  assert.deepEqual(board["hint:한국사"], [{ score: 5, date: "d" }]);
-  assert.deepEqual(board["speed:한국사"], [{ score: 3, date: "e" }]);
-});
-
-test("recordsFor는 기록이 없거나 배열이 아니면 빈 배열을 돌려준다", () => {
-  assert.deepEqual(recordsFor({}, "speed:과학"), []);
-  assert.deepEqual(recordsFor({ "speed:과학": "깨진 값" }, "speed:과학"), []);
-});
-
-test("addRecord는 깨진 표를 빈 표로 보고 새 기록을 넣는다", () => {
-  const board = addRecord({ "speed:과학": "깨진 값" }, "speed:과학", { score: 3, date: "d" });
-  assert.deepEqual(board["speed:과학"], [{ score: 3, date: "d" }]);
-});
-
-test("saveBoard로 저장한 순위표를 loadBoard로 다시 읽는다", () => {
-  const storage = fakeStorage();
-  const board = addRecord({}, "speed:과학", { score: 7, date: "2026-10-09 21:50" });
-  assert.equal(saveBoard(storage, board), true);
-  assert.deepEqual(loadBoard(storage), board);
-});
-
-test("loadBoard는 저장된 값이 없거나 깨져 있으면 빈 순위표를 돌려준다", () => {
-  assert.deepEqual(loadBoard(fakeStorage()), {});
-  for (const broken of ["{깨짐", "[1,2]", "null", "3", '"글자"']) {
-    assert.deepEqual(loadBoard(fakeStorage({ quizLeaderboard: broken })), {}, broken);
-  }
-});
-
-test("저장소를 쓸 수 없어도 멈추지 않는다", () => {
+check("저장소를 쓸 수 없어도 멈추지 않는다", () => {
   const blocked = {
     getItem() {
       throw new Error("막힘");
@@ -1807,214 +982,139 @@ test("저장소를 쓸 수 없어도 멈추지 않는다", () => {
       throw new Error("막힘");
     },
   };
-  assert.deepEqual(loadBoard(blocked), {});
-  assert.equal(saveBoard(blocked, {}), false);
-  assert.deepEqual(loadBoard(null), {});
-  assert.equal(saveBoard(null, {}), false);
+  expectEqual([loadBoard(blocked), saveBoard(blocked, {}), loadBoard(null), saveBoard(null, {})], [{}, false, {}, false]);
 });
 
-test("formatDate는 YYYY-MM-DD HH:MM 형식으로 바꾼다", () => {
-  assert.equal(formatDate(new Date(2026, 9, 9, 7, 5)), "2026-10-09 07:05");
+check("formatDate는 YYYY-MM-DD HH:MM 형식으로 바꾼다", () => {
+  expectEqual(formatDate(new Date(2026, 9, 9, 7, 5)), "2026-10-09 07:05");
+});
+
+check("cleanName은 앞뒤 공백을 지우고, 1~12자가 아니면 null이다", () => {
+  expectEqual(
+    [cleanName("  민수 "), cleanName("   "), cleanName(""), cleanName("가".repeat(12)), cleanName("가".repeat(13))],
+    ["민수", null, null, "가".repeat(12), null],
+  );
 });
 ```
 
-- [ ] **Step 2: 테스트가 실패하는지 확인한다**
+- [ ] **Step 3: 점검이 실패하는지 확인한다**
 
-Run: `node --test tests/leaderboard.test.js`
-Expected: FAIL. `boardKey is not a function`
+Run: 점검 명령
+Expected: `실패:` 3줄(상위 5개, recordsFor, cleanName), `자체 점검 결과: 통과 33, 실패 3`, 종료 코드 1
 
-- [ ] **Step 3: 순위표 함수를 만든다**
+- [ ] **Step 4: 순위표 규칙을 고친다**
 
-`script.js`의 `// ===== 화면 =====` 줄 바로 위에 넣는다.
+`const LEADERBOARD_SIZE = 10;`을 다음 두 줄로 바꾼다.
 
 ```js
-const LEADERBOARD_KEY = "quizLeaderboard";
-const LEADERBOARD_SIZE = 10;
-const RANKED_MODES = ["speed", "hint"]; // 연습 모드는 순위표에 기록하지 않는다.
+const LEADERBOARD_SIZE = 5;
+const NAME_MAX_LENGTH = 12;
+```
 
-// 순위표는 { "speed:한국사": [{ score, date }, ...], ... } 모양이다.
-function boardKey(mode, category) {
-  return `${mode}:${category}`;
-}
+`boardKey` 위의 주석을 바꾼다.
 
+```js
+// 순위표는 { "speed:한국사": [{ name, score, date }, ...], ... } 모양이다.
+```
+
+`recordsFor`와 그 주석을 다음으로 바꾼다.
+
+```js
+// 손으로 고친 저장값이나 이름이 없던 예전 기록이 섞일 수 있어, 이름이 글자이고 점수가 숫자인 기록만 남긴다.
 function recordsFor(board, key) {
-  return Array.isArray(board[key]) ? board[key] : [];
-}
-
-// 기록을 넣고 점수 높은 순으로 상위 10개만 남긴 새 순위표를 돌려준다.
-// sort는 안정 정렬이라 점수가 같으면 먼저 들어간(먼저 세운) 기록이 위에 남는다.
-function addRecord(board, key, record) {
-  const records = recordsFor(board, key).concat(record);
-  records.sort((a, b) => b.score - a.score);
-  return { ...board, [key]: records.slice(0, LEADERBOARD_SIZE) };
-}
-
-// 저장된 순위표를 읽는다. 저장소를 쓸 수 없거나 값이 깨져 있으면 빈 순위표를 돌려준다.
-function loadBoard(storage) {
-  try {
-    const board = JSON.parse(storage.getItem(LEADERBOARD_KEY));
-    return board && typeof board === "object" && !Array.isArray(board) ? board : {};
-  } catch {
-    return {};
+  if (!Array.isArray(board[key])) {
+    return [];
   }
-}
-
-// 순위표를 저장한다. 저장소를 쓸 수 없으면 false를 돌려준다.
-function saveBoard(storage, board) {
-  try {
-    storage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// 2026-10-09 07:05 형식(브라우저 시각 기준)
-function formatDate(date) {
-  const pad = (n) => String(n).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return board[key].filter(
+    (record) =>
+      record !== null &&
+      typeof record === "object" &&
+      typeof record.name === "string" &&
+      typeof record.score === "number",
   );
 }
 ```
 
-`module.exports` 블록의 `remainingSeconds,` 다음 줄에 추가한다.
+`addRecord` 위 주석의 "상위 10개"를 "상위 5개"로 바꾼다.
+
+`formatDate` 함수 바로 아래에 넣는다.
 
 ```js
-    LEADERBOARD_KEY,
-    boardKey,
-    recordsFor,
-    addRecord,
-    loadBoard,
-    saveBoard,
-    formatDate,
+// 입력한 이름의 앞뒤 공백을 지운다. 1~12자가 아니면 null을 돌려준다.
+function cleanName(text) {
+  const name = typeof text === "string" ? text.trim() : "";
+  return name.length >= 1 && name.length <= NAME_MAX_LENGTH ? name : null;
+}
 ```
 
-- [ ] **Step 4: 테스트가 통과하는지 확인한다**
+- [ ] **Step 5: 점검이 통과하는지 확인한다**
 
-Run: `node --test`
-Expected: 41개 모두 PASS
+Run: 점검 명령
+Expected: `자체 점검 결과: 통과 36, 실패 0`, 종료 코드 0
 
-- [ ] **Step 5: 커밋한다**
+- [ ] **Step 6: 커밋한다**
 
 ```bash
-git add script.js tests/leaderboard.test.js
-git commit -m "feat: 순위표 규칙" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git add script.js
+git commit -m "feat: 순위표를 상위 5건과 이름 기록으로 바꿈" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
-### Task 9: 점수 저장과 순위표 화면
+### Task 14: 결과 화면 이름 입력과 순위표 이름 열
 
 **Files:**
-- Modify: `index.html`, `style.css`, `script.js` (화면 부분)
+- Modify: `index.html` (54번째 줄 `result-saved`, 69번째 줄 순위표 머리글)
+- Modify: `style.css` (끝에 추가)
+- Modify: `script.js` (`setUpPage`, `nextQuestion`, `showResult`, `recordResult`, `renderBoard`, 새 함수 `handleRecord`)
 
 **Interfaces:**
-- Consumes: Task 4, 6, 7의 화면 함수, `RANKED_MODES`, `boardKey`, `recordsFor`, `addRecord`, `loadBoard`, `saveBoard`, `formatDate`
-- Produces:
-  - `app.boardMode`, `app.boardCategory`
-  - `browserStorage()`, `recordResult(round): boolean`, `showBoard()`, `renderBoard()`
-  - `showResult(saved: boolean | null)` `null`은 기록 대상이 아님(연습 모드)
-  - HTML id: `board-button`, `result-saved`, `leaderboard-screen`, `board-mode-buttons`, `board-category-buttons`, `board-table`, `board-rows`, `board-empty`, `board-home-button`
+- Consumes: `cleanName`, `RANKED_MODES`, `addRecord`, `loadBoard`, `saveBoard`, `boardKey`, `formatDate`, `roundScore`
+- Produces: HTML id `record-form`, `name-input`, `record-button`. `showResult()`는 인자가 없어짐. `recordResult(round, name): boolean`
 
-- [ ] **Step 1: `index.html`을 고친다**
-
-시작 화면의 `<button id="start-button" ...>` 바로 아래에 넣는다.
+- [ ] **Step 1: `index.html` 결과 화면의 `result-saved` 줄을 다음으로 바꾼다**
 
 ```html
-      <button id="board-button" class="board-button" type="button">순위표</button>
-```
-
-결과 화면의 `<p id="all-cleared" ...>` 바로 아래에 넣는다.
-
-```html
+      <form id="record-form" class="record-form" hidden>
+        <label for="name-input">이름(별명)</label>
+        <input id="name-input" type="text" maxlength="12" autocomplete="off">
+        <button id="record-button" type="submit">순위표에 기록</button>
+      </form>
       <p id="result-saved" class="notice" hidden></p>
 ```
 
-결과 화면 `</section>` 바로 아래(`</main>` 위)에 넣는다.
+- [ ] **Step 2: 순위표 머리글을 바꾼다**
 
 ```html
-
-    <!-- 순위표 화면 -->
-    <section id="leaderboard-screen" class="screen" hidden>
-      <h2>순위표</h2>
-      <div id="board-mode-buttons" class="button-grid"></div>
-      <div id="board-category-buttons" class="button-grid board-categories"></div>
-      <table id="board-table" class="board-table">
-        <thead>
-          <tr><th>순위</th><th>점수</th><th>날짜</th></tr>
-        </thead>
-        <tbody id="board-rows"></tbody>
-      </table>
-      <p id="board-empty" class="notice" hidden>아직 기록이 없습니다.</p>
-      <div class="actions">
-        <button id="board-home-button" type="button">처음으로</button>
-      </div>
-    </section>
+          <tr><th>순위</th><th>이름</th><th>점수</th><th>날짜</th></tr>
 ```
 
-- [ ] **Step 2: `style.css` 끝에 추가한다**
+- [ ] **Step 3: `style.css` 끝에 추가한다**
 
 ```css
-.board-button {
-  width: 100%;
-  margin-top: 8px;
-}
-
-.board-categories {
-  margin-top: 8px;
-}
-
-.board-table {
-  width: 100%;
+.record-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin-top: 16px;
-  border-collapse: collapse;
-  background: var(--card);
 }
 
-.board-table th,
-.board-table td {
-  padding: 8px;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
+.record-form input {
+  flex: 1 1 140px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
 }
 ```
 
-- [ ] **Step 3: `script.js` 화면 부분을 고친다**
-
-`app` 객체를 다음으로 바꾼다.
+- [ ] **Step 4: `setUpPage`의 `byId("home-button")...` 줄 바로 아래에 넣는다**
 
 ```js
-// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머, 다시 풀기 상태, 순위표 화면에서 고른 표
-const app = {
-  mode: "practice",
-  category: CATEGORIES[0],
-  round: null,
-  timerId: null,
-  deadline: 0,
-  firstRound: null, // 다시 풀기를 해도 점수는 이 판 기준이다.
-  retryNumber: 0, // 0이면 처음 판, 1부터는 다시 풀기 회차
-  boardMode: RANKED_MODES[0],
-  boardCategory: CATEGORIES[0],
-};
+  byId("record-form").addEventListener("submit", handleRecord);
 ```
 
-`setUpPage`의 `updateStartScreen();` 줄(마지막 줄) 바로 위에 넣는다.
-
-```js
-  makeOptionButtons("board-mode-buttons", RANKED_MODES, (mode) => MODE_NAMES[mode], (mode) => {
-    app.boardMode = mode;
-    renderBoard();
-  });
-  makeOptionButtons("board-category-buttons", CATEGORIES, (category) => category, (category) => {
-    app.boardCategory = category;
-    renderBoard();
-  });
-  byId("board-button").addEventListener("click", showBoard);
-  byId("board-home-button").addEventListener("click", () => showScreen("start-screen"));
-
-```
-
-`nextQuestion`을 다음으로 바꾼다.
+- [ ] **Step 5: `nextQuestion`을 다음으로 바꾼다** (판이 끝날 때 자동 기록하지 않음)
 
 ```js
 function nextQuestion() {
@@ -2022,119 +1122,115 @@ function nextQuestion() {
     showQuestion();
     return;
   }
-  // 스피드 모드와 힌트 모드만 판이 끝날 때 한 번 기록한다.
-  const saved = RANKED_MODES.includes(app.round.mode) ? recordResult(app.round) : null;
-  showResult(saved);
+  showResult();
 }
 ```
 
-`showResult`를 다음으로 바꾼다.
+- [ ] **Step 6: `showResult`를 바꾼다**
+
+주석 줄 `// saved: 순위표에 기록했으면 ...`을 지우고, `function showResult(saved) {`를 `function showResult() {`로 바꾼다. 함수 끝의 `savedLine` 블록(`const savedLine = ...`부터 `"이 브라우저에서는 순위표에 기록할 수 없습니다.";`까지)을 다음으로 바꾼다.
 
 ```js
-// saved: 순위표에 기록했으면 true, 기록하지 못했으면 false, 기록 대상이 아니면 null
-function showResult(saved) {
-  const first = app.firstRound;
-  const round = app.round;
-  const total = first.questions.length;
-  const correct = correctCount(first);
-  const scoreText = `${formatScore(roundScore(first))} / ${total}`;
-  byId("result-score").textContent = app.retryNumber > 0 ? `처음 점수 ${scoreText}` : scoreText;
-  byId("result-detail").textContent = `${total}문제 중 ${correct}개 맞힘, ${total - correct}개 틀림`;
-  byId("result-notice").hidden = round.mode !== "practice";
+  // 스피드 모드와 힌트 모드만 이름을 받아 기록한다. 새 결과 화면마다 입력 칸을 비우고 다시 연다.
+  byId("record-form").hidden = !RANKED_MODES.includes(round.mode);
+  byId("name-input").value = "";
+  byId("name-input").disabled = false;
+  byId("record-button").disabled = false;
+  byId("result-saved").hidden = true;
+```
 
-  const retryLine = byId("result-retry");
-  retryLine.hidden = app.retryNumber === 0;
-  retryLine.textContent =
-    `다시 풀기 ${app.retryNumber}회차: ${round.questions.length}문제 중 ${correctCount(round)}개 맞힘`;
+- [ ] **Step 7: `showResult` 바로 아래에 `handleRecord`를 넣는다**
 
-  const remaining = wrongQuestions(round).length;
-  const retryButton = byId("retry-wrong-button");
-  retryButton.hidden = round.mode !== "practice" || remaining === 0;
-  retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
-  byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
-
+```js
+// 결과 화면에서 이름을 받아 이번 판을 순위표에 기록한다. 기록하면 다시 기록하지 못하게 잠근다.
+function handleRecord(event) {
+  event.preventDefault();
   const savedLine = byId("result-saved");
-  savedLine.hidden = saved === null;
-  savedLine.textContent = saved
+  savedLine.hidden = false;
+  const name = cleanName(byId("name-input").value);
+  if (name === null) {
+    savedLine.textContent = "이름을 입력해 주세요.";
+    return;
+  }
+  byId("name-input").disabled = true;
+  byId("record-button").disabled = true;
+  savedLine.textContent = recordResult(app.round, name)
     ? "순위표에 기록했습니다."
     : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
-  showScreen("result-screen");
 }
 ```
 
-`showResult` 바로 아래에 넣는다.
+- [ ] **Step 8: `recordResult`를 다음으로 바꾼다**
 
 ```js
-// 브라우저 설정에 따라 localStorage에 접근하는 것만으로 오류가 날 수 있어 감싼다.
-function browserStorage() {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
-
-// 끝난 판의 점수를 순위표에 넣는다. 저장했으면 true를 돌려준다.
-function recordResult(round) {
+// 끝난 판의 점수를 이름과 함께 순위표에 넣는다. 저장했으면 true를 돌려준다.
+function recordResult(round, name) {
   const storage = browserStorage();
-  const record = { score: roundScore(round), date: formatDate(new Date()) };
+  const record = { name, score: roundScore(round), date: formatDate(new Date()) };
   const board = addRecord(loadBoard(storage), boardKey(round.mode, round.category), record);
   return saveBoard(storage, board);
 }
-
-function showBoard() {
-  renderBoard();
-  showScreen("leaderboard-screen");
-}
-
-function renderBoard() {
-  markSelected("board-mode-buttons", app.boardMode);
-  markSelected("board-category-buttons", app.boardCategory);
-  const records = recordsFor(loadBoard(browserStorage()), boardKey(app.boardMode, app.boardCategory));
-
-  const rows = byId("board-rows");
-  rows.replaceChildren();
-  records.forEach((record, i) => {
-    const row = document.createElement("tr");
-    [`${i + 1}위`, `${formatScore(record.score)}점`, record.date].forEach((text) => {
-      const cell = document.createElement("td");
-      cell.textContent = text;
-      row.append(cell);
-    });
-    rows.append(row);
-  });
-  byId("board-table").hidden = records.length === 0;
-  byId("board-empty").hidden = records.length > 0;
-}
 ```
 
-- [ ] **Step 4: Node 테스트가 여전히 통과하는지 확인한다**
+- [ ] **Step 9: `renderBoard`의 칸 목록에 이름을 넣는다**
 
-Run: `node --test`
-Expected: 41개 모두 PASS
+```js
+    [`${i + 1}위`, record.name, `${formatScore(record.score)}점`, record.date].forEach((text) => {
+```
 
-- [ ] **Step 5: 브라우저에서 확인한다 (PRD 8장 3단계 확인 목록)**
+- [ ] **Step 10: 점검 명령과 화면을 확인한다**
 
-시작 전에 개발자 도구 콘솔에서 `localStorage.removeItem("quizLeaderboard")`로 기록을 비운다.
+Run: 점검 명령 → `통과 36, 실패 0`, 종료 코드 0
 
-1. 시작 화면에서 [순위표]를 누르면 스피드, 힌트 버튼과 카테고리 4개가 보이고, 기록이 없으므로 "아직 기록이 없습니다."가 보인다.
-2. 스피드 모드 과학 판을 끝내면 결과 화면에 "순위표에 기록했습니다."가 보이고, 순위표의 스피드, 과학 표에 그 점수와 오늘 날짜(`YYYY-MM-DD HH:MM`)가 1위로 보인다. 다른 표에는 없다.
-3. 힌트 모드에서 0.5점이 섞인 판을 끝내면 힌트 표에 `7.5점`처럼 보인다.
-4. 연습 판을 끝내면 "순위표에 기록했습니다."가 보이지 않고 순위표에도 기록이 늘지 않는다. 다시 풀기 결과 화면에서도 마찬가지다.
-5. 같은 표에 점수가 다른 기록을 몇 개 쌓으면 점수 높은 순이고, 같은 점수는 먼저 세운 기록이 위다. 브라우저를 껐다 켜도 기록이 남아 있다. 상위 10개 제한은 Task 8 테스트로 확인했으므로 손으로 11판을 할 필요는 없다.
-6. (Review Focus 4) 콘솔에서 `localStorage.setItem("quizLeaderboard", "{깨짐")`을 실행하고 [순위표]를 열면 앱이 멈추지 않고 "아직 기록이 없습니다."가 보인다. 이어서 스피드 판을 끝내면 정상으로 기록된다.
-7. 창 폭을 375px로 줄여도 순위표가 가로 스크롤 없이 보인다.
+`quiz-static` 서버로 3단계 "브라우저에서 직접 확인할 항목"을 확인한다. 확인이 끝나면 `localStorage.removeItem("quizLeaderboard")`로 점검 기록을 지운다.
 
-- [ ] **Step 6: 커밋한다**
+- [ ] **Step 11: 커밋한다**
 
 ```bash
 git add index.html style.css script.js
-git commit -m "feat: 점수 저장과 순위표 화면" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat: 결과 화면에서 이름을 받아 순위표에 기록" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
+
+### Task 15: 3단계 점검과 보고 (여기서 멈춤)
+
+- [ ] **Step 1: 점검 명령, 문항 검수 명령, `git status`를 확인한다.**
+- [ ] **Step 2: 보고하고 멈춘다.** 점검 결과, Claude가 확인한 항목, 사용자가 확인할 3단계 항목 목록을 적는다. **사용자가 "3단계 확인 끝났어"라고 하기 전에는 Task 16으로 가지 않는다.**
+
+### Task 16: 3단계 병합과 배포 (사용자 승인 뒤)
+
+- [ ] **Step 1: 병합하고 점검한다**
+
+```bash
+git switch main
+git merge --no-ff stage-3 -m "Merge branch 'stage-3': 3단계 점수 저장과 순위표" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+```
+
+점검 명령 → `통과 36, 실패 0`
+
+- [ ] **Step 2: 올리고 배포를 확인한다**
+
+```bash
+git push origin main
+gh api repos/dkstjdus123/Study03_Quiz/pages/builds/latest --jq .status
+```
+
+Expected: `built`. 배포 주소의 `?test`에서 `통과 36, 실패 0`
+
+- [ ] **Step 3: 최종 보고한다.** 배포 주소, 단계별 커밋 목록, 남은 결정 사항을 적는다.
 
 ---
 
-## 완료 후
+## PRD 대응표
 
-- PRD 8장의 1~3단계 확인 목록이 모두 체크되었는지 PRD와 대조한다.
-- 진짜 문항으로 바꾸는 일은 사용자가 한다. 바꾼 뒤 `node --test`의 "questions.js의 문항은 형식 검사를 통과한다"와 브라우저 콘솔의 `[문항 검사]` 경고로 형식을 확인할 수 있다.
+| PRD | 태스크 |
+|---|---|
+| 2장 범위, 3장 앱 파일 4개 | 1 (`tests/` 삭제, 자체 점검) |
+| 4.1 형식 | 4~7 |
+| 4.2 작성 규칙 | 4~7 (문항 검수 명령) |
+| 4.3 출처 규칙과 검수표 | 4~7 (`QUESTION-REVIEW.md`) |
+| 4.4 문항 데이터 검사 | 1, 2 (검사), 3 (화면 표시) |
+| 5장 화면 흐름, 6장 연습 모드 | 8 (확인) |
+| 6장 스피드, 힌트, 다시 풀기 | 10, 11 |
+| 7장 순위표 | 13, 14 |
+| 8장 단계별 멈춤, 커밋, 배포 | 8, 9, 11, 12, 15, 16 |
+| 9장 검증 방법 | 1 (점검 명령, `?test`), 각 단계 확인 항목 |
