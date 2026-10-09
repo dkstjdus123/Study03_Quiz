@@ -1,0 +1,56 @@
+<!-- 2026-10-09 22:29 KST -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>상식 퀴즈</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1>상식 퀴즈</h1>
+    <p id="load-error" class="error" hidden>문항 파일(questions.js)을 읽지 못했습니다. 브라우저 콘솔에서 오류를 확인해 주세요.</p>
+
+    <!-- 시작 화면 -->
+    <section id="start-screen" class="screen">
+      <h2>카테고리</h2>
+      <div id="category-buttons" class="button-grid"></div>
+      <p id="start-notice" class="notice">순위표에 기록되지 않음</p>
+      <button id="start-button" class="primary" type="button">시작</button>
+    </section>
+
+    <!-- 퀴즈 화면 -->
+    <section id="quiz-screen" class="screen" hidden>
+      <p id="round-label" class="round-label"></p>
+      <div class="quiz-header">
+        <span id="progress"></span>
+        <span id="current-score"></span>
+      </div>
+      <p id="question-text" class="question"></p>
+      <div id="choices" class="choices"></div>
+      <div id="feedback" class="feedback" hidden>
+        <p id="feedback-result" class="feedback-result"></p>
+        <p id="feedback-explanation"></p>
+        <p id="feedback-source" class="source"></p>
+        <button id="next-button" class="primary" type="button">다음</button>
+      </div>
+    </section>
+
+    <!-- 결과 화면 -->
+    <section id="result-screen" class="screen" hidden>
+      <h2>결과</h2>
+      <p id="result-score" class="result-score"></p>
+      <p id="result-detail"></p>
+      <p id="result-notice" class="notice">순위표에 기록되지 않음</p>
+      <div class="actions">
+        <button id="replay-button" type="button">다시 하기</button>
+        <button id="home-button" type="button">처음으로</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
