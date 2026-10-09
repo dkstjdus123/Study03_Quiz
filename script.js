@@ -1,6 +1,6 @@
 // 2026-10-09 22:22 KST
 // 상식 퀴즈의 규칙과 화면 동작.
-// "규칙" 부분은 화면 없이 동작하는 함수라서 Node 테스트(tests 폴더)로 검사한다.
+// "규칙" 부분은 화면 없이 동작하는 함수라서, 아래 "자체 점검"(index.html?test 또는 IMPL-PLAN.md의 점검 명령)으로 확인한다.
 
 // ===== 규칙 =====
 
@@ -223,6 +223,224 @@ function formatDate(date) {
     `${pad(date.getHours())}:${pad(date.getMinutes())}`
   );
 }
+
+// ===== 자체 점검 =====
+// index.html?test로 열거나 IMPL-PLAN.md의 점검 명령을 실행하면 아래 항목을 차례로 확인한다.
+// 항목마다 콘솔에 통과나 실패를 찍고, 마지막에 "자체 점검 결과: 통과 N, 실패 M"을 찍는다.
+
+const SELF_CHECKS = [];
+
+function check(name, fn) {
+  SELF_CHECKS.push({ name, fn });
+}
+
+// 두 값을 JSON 문자열로 바꿔 비교한다. 다르면 기댓값과 실제 값을 담은 오류를 던진다.
+function expectEqual(actual, expected) {
+  const actualText = JSON.stringify(actual);
+  const expectedText = JSON.stringify(expected);
+  if (actualText !== expectedText) {
+    throw new Error(`기댓값 ${expectedText}, 실제 ${actualText}`);
+  }
+}
+
+// 모든 항목을 돌리고 실패 수를 돌려준다.
+function runSelfChecks() {
+  let passed = 0;
+  let failed = 0;
+  SELF_CHECKS.forEach(({ name, fn }) => {
+    try {
+      fn();
+      passed += 1;
+      console.log(`통과: ${name}`);
+    } catch (error) {
+      failed += 1;
+      console.error(`실패: ${name} (${error.message})`);
+    }
+  });
+  console.log(`자체 점검 결과: 통과 ${passed}, 실패 ${failed}`);
+  return failed;
+}
+
+// 점검용 문항. 정답은 0번 보기 "정답"이다. 바꿀 칸만 overrides로 넘긴다.
+function sampleQuestion(overrides = {}) {
+  return {
+    id: "q-01",
+    category: "한국사",
+    question: "문제",
+    choices: ["정답", "오답1", "오답2", "오답3"],
+    answer: 0,
+    explanation: "해설",
+    source: { name: "출처", url: "https://example.com" },
+    ...overrides,
+  };
+}
+
+// 카테고리마다 10개씩, 형식이 올바른 점검용 문항 40개. id는 c0-1 ~ c3-10이다.
+function sampleQuestionSet() {
+  const list = [];
+  CATEGORIES.forEach((category, c) => {
+    for (let n = 1; n <= QUESTIONS_PER_CATEGORY; n += 1) {
+      list.push(sampleQuestion({ id: `c${c}-${n}`, category }));
+    }
+  });
+  return list;
+}
+
+// 점검용 판. 문항의 정답은 모두 0번 보기다.
+function sampleRound(mode, count) {
+  const questions = [];
+  for (let n = 1; n <= count; n += 1) {
+    questions.push(sampleQuestion({ id: `q-${n}` }));
+  }
+  return createRound(mode, "한국사", questions);
+}
+
+// 점검용 문항 40개 중 첫 문항만 바꿔서 문항 검사 결과를 돌려준다.
+function validateWithFirst(overrides) {
+  const set = sampleQuestionSet();
+  set[0] = sampleQuestion({ id: "c0-1", ...overrides });
+  return validateQuestions(set);
+}
+
+// --- 1단계: 섞기, 점수, 문항 검사 ---
+
+check("shuffle은 원래 배열을 바꾸지 않고 같은 원소를 가진 새 배열을 돌려준다", () => {
+  const items = ["a", "b", "c", "d"];
+  const result = shuffle(items);
+  expectEqual(items, ["a", "b", "c", "d"]);
+  expectEqual(result.slice().sort(), ["a", "b", "c", "d"]);
+  if (result === items) {
+    throw new Error("원래 배열을 그대로 돌려주었습니다.");
+  }
+});
+
+check("shuffle은 random 값에 따라 순서를 바꾼다", () => {
+  expectEqual(shuffle(["a", "b", "c", "d"], () => 0), ["b", "c", "d", "a"]);
+  expectEqual(shuffle(["a", "b", "c", "d"], () => 0.999), ["a", "b", "c", "d"]);
+});
+
+check("prepareQuestion은 보기를 섞고 정답 위치를 함께 옮긴다", () => {
+  const question = sampleQuestion();
+  const prepared = prepareQuestion(question, () => 0);
+  expectEqual(prepared.choices, ["오답1", "오답2", "오답3", "정답"]);
+  expectEqual(prepared.answer, 3);
+  expectEqual(question.choices, ["정답", "오답1", "오답2", "오답3"]);
+});
+
+check("prepareQuestion은 몇 번을 섞어도 정답 보기를 정확히 가리킨다", () => {
+  const question = sampleQuestion({ choices: ["오답1", "오답2", "정답", "오답3"], answer: 2 });
+  for (let i = 0; i < 200; i += 1) {
+    const prepared = prepareQuestion(question);
+    expectEqual(prepared.choices[prepared.answer], "정답");
+  }
+});
+
+check("prepareRound는 문항 순서와 보기 순서를 함께 섞는다", () => {
+  const questions = [1, 2, 3, 4].map((n) => sampleQuestion({ id: `q-${n}` }));
+  const round = prepareRound(questions, () => 0);
+  expectEqual(round.map((q) => q.id), ["q-2", "q-3", "q-4", "q-1"]);
+  round.forEach((q) => {
+    expectEqual(q.choices[q.answer], "정답");
+  });
+});
+
+check("scoreAnswer: 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리면 0점이다", () => {
+  expectEqual(
+    [scoreAnswer(true, false), scoreAnswer(true, true), scoreAnswer(false, false), scoreAnswer(false, true)],
+    [1, 0.5, 0, 0],
+  );
+});
+
+check("formatScore는 정수면 정수로, 0.5가 있으면 소수 한 자리로 보여 준다", () => {
+  expectEqual([formatScore(7), formatScore(7.5), formatScore(0), formatScore(10)], ["7", "7.5", "0", "10"]);
+});
+
+check("answerCurrent는 정답 여부와 점수를 기록하고, null은 시간 초과로 0점이다", () => {
+  const round = sampleRound("speed", 2);
+  expectEqual(answerCurrent(round, 0).points, 1);
+  goNext(round);
+  const timeout = answerCurrent(round, null);
+  expectEqual([timeout.correct, timeout.points], [false, 0]);
+});
+
+check("이미 답한 문항에 다시 답하면 무시한다", () => {
+  const round = sampleRound("speed", 3);
+  answerCurrent(round, 1);
+  expectEqual(answerCurrent(round, 0), null);
+  expectEqual(answerCurrent(round, null), null);
+  expectEqual([round.results.length, roundScore(round)], [1, 0]);
+});
+
+check("한 판의 점수, 맞힌 수, 틀린 문항을 세고, 마지막 문항 뒤 goNext는 false다", () => {
+  const round = sampleRound("hint", 4);
+  answerCurrent(round, 0);
+  goNext(round);
+  round.usedHint = true;
+  answerCurrent(round, 0);
+  goNext(round);
+  expectEqual(round.usedHint, false);
+  answerCurrent(round, 2);
+  goNext(round);
+  answerCurrent(round, null);
+  expectEqual(goNext(round), false);
+  expectEqual([roundScore(round), correctCount(round)], [1.5, 2]);
+  expectEqual(wrongQuestions(round).map((q) => q.id), ["q-3", "q-4"]);
+});
+
+check("validateQuestions: 형식이 올바른 40문항이면 경고가 없다", () => {
+  expectEqual(validateQuestions(sampleQuestionSet()), []);
+});
+
+check("validateQuestions: 배열이 아니면 경고한다", () => {
+  expectEqual(validateQuestions(undefined), ["QUESTIONS가 배열이 아닙니다."]);
+});
+
+check("validateQuestions: 보기가 4개가 아니면 경고한다", () => {
+  expectEqual(validateWithFirst({ choices: ["가", "나", "다"] }), ["c0-1: 보기가 4개가 아닙니다."]);
+});
+
+check("validateQuestions: answer가 0~3 사이의 정수가 아니면 경고한다", () => {
+  [4, -1, 1.5, "0", undefined].forEach((answer) => {
+    expectEqual(validateWithFirst({ answer }), ["c0-1: answer는 0~3 사이의 정수여야 합니다."]);
+  });
+});
+
+check("validateQuestions: 해설이 비어 있으면 경고한다", () => {
+  expectEqual(validateWithFirst({ explanation: "  " }), ["c0-1: 해설(explanation)이 비어 있습니다."]);
+});
+
+check("validateQuestions: id가 비어 있거나 겹치면 경고한다", () => {
+  const set = sampleQuestionSet();
+  set[0] = sampleQuestion({ id: "" });
+  set[2] = sampleQuestion({ id: "c0-2" });
+  expectEqual(validateQuestions(set), ["1번째 문항: id가 비어 있습니다.", "c0-2: id가 다른 문항과 겹칩니다."]);
+});
+
+check("validateQuestions: 카테고리가 4개 중 하나가 아니거나 개수가 10개가 아니면 경고한다", () => {
+  expectEqual(validateWithFirst({ category: "역사" }), [
+    'c0-1: 카테고리 "역사"는 정해진 4개 중 하나가 아닙니다.',
+    '카테고리 "한국사"의 문항이 9개입니다. 10개여야 합니다.',
+  ]);
+});
+
+check("validateQuestions: 출처가 { name, url } 모양이 아니면 경고한다", () => {
+  const broken = [
+    "문자열 출처",
+    null,
+    { name: "", url: "https://example.com" },
+    { name: "출처", url: "" },
+    { name: "출처", url: "javascript:alert(1)" },
+  ];
+  broken.forEach((source) => {
+    expectEqual(validateWithFirst({ source }), [
+      "c0-1: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.",
+    ]);
+  });
+});
+
+check("questions.js의 실제 문항이 문항 검사를 통과한다", () => {
+  expectEqual(validateQuestions(readQuestions()), []);
+});
 
 // ===== 화면 =====
 // 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
@@ -563,35 +781,11 @@ function renderBoard() {
   byId("board-empty").hidden = records.length > 0;
 }
 
-if (typeof document !== "undefined") {
-  setUpPage();
+// index.html?test로 열거나 점검 명령으로 실행하면 자체 점검을 돈다. 점검 명령은 selfCheckFailed(실패 수)를 읽는다.
+if (typeof location !== "undefined" && /[?&]test(&|=|$)/.test(location.search)) {
+  globalThis.selfCheckFailed = runSelfChecks();
 }
 
-// Node 테스트에서 규칙 함수를 불러 쓰기 위한 부분이다. 브라우저에는 module이 없어 실행되지 않는다.
-if (typeof module !== "undefined") {
-  module.exports = {
-    CATEGORIES,
-    validateQuestions,
-    shuffle,
-    prepareQuestion,
-    prepareRound,
-    scoreAnswer,
-    formatScore,
-    createRound,
-    answerCurrent,
-    goNext,
-    roundScore,
-    correctCount,
-    wrongQuestions,
-    useHint,
-    SPEED_SECONDS,
-    remainingSeconds,
-    LEADERBOARD_KEY,
-    boardKey,
-    recordsFor,
-    addRecord,
-    loadBoard,
-    saveBoard,
-    formatDate,
-  };
+if (typeof document !== "undefined") {
+  setUpPage();
 }
