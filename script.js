@@ -139,6 +139,163 @@ function wrongQuestions(round) {
   return round.results.filter((result) => !result.correct).map((result) => result.question);
 }
 
+// ===== 화면 =====
+// 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
+
+const MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" };
+
+// 지금 고른 모드와 카테고리, 진행 중인 판
+const app = {
+  mode: "practice",
+  category: CATEGORIES[0],
+  round: null,
+};
+
+function byId(id) {
+  return document.getElementById(id);
+}
+
+function setUpPage() {
+  // questions.js에 문법 오류가 있으면 QUESTIONS가 만들어지지 않는다.
+  if (typeof QUESTIONS === "undefined") {
+    byId("load-error").hidden = false;
+    byId("start-screen").hidden = true;
+    return;
+  }
+  validateQuestions(QUESTIONS).forEach((message) => {
+    console.warn(`[문항 검사] ${message}`);
+  });
+
+  makeOptionButtons("category-buttons", CATEGORIES, (category) => category, (category) => {
+    app.category = category;
+    updateStartScreen();
+  });
+  byId("start-button").addEventListener("click", startNewRound);
+  byId("next-button").addEventListener("click", nextQuestion);
+  byId("replay-button").addEventListener("click", startNewRound);
+  byId("home-button").addEventListener("click", () => showScreen("start-screen"));
+
+  updateStartScreen();
+}
+
+// 하나만 고를 수 있는 버튼 묶음을 만든다. values의 값마다 버튼 하나를 만든다.
+function makeOptionButtons(containerId, values, labelOf, onSelect) {
+  const container = byId(containerId);
+  values.forEach((value) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "option";
+    button.textContent = labelOf(value);
+    button.dataset.value = value;
+    button.addEventListener("click", () => onSelect(value));
+    container.append(button);
+  });
+}
+
+// 고른 버튼에만 aria-pressed="true"를 붙인다.
+function markSelected(containerId, selectedValue) {
+  byId(containerId).querySelectorAll("button").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.value === selectedValue));
+  });
+}
+
+function updateStartScreen() {
+  markSelected("category-buttons", app.category);
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach((screen) => {
+    screen.hidden = screen.id !== id;
+  });
+}
+
+function startNewRound() {
+  const questions = QUESTIONS.filter((question) => question.category === app.category);
+  app.round = createRound(app.mode, app.category, prepareRound(questions));
+  showScreen("quiz-screen");
+  showQuestion();
+}
+
+function showQuestion() {
+  const round = app.round;
+  const question = round.questions[round.index];
+  byId("round-label").textContent = `${MODE_NAMES[round.mode]} 모드, ${round.category}`;
+  byId("progress").textContent = `${round.index + 1} / ${round.questions.length}`;
+  byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
+  byId("question-text").textContent = question.question;
+
+  const choices = byId("choices");
+  choices.replaceChildren();
+  question.choices.forEach((text, i) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "choice";
+    button.textContent = text;
+    button.addEventListener("click", () => handleAnswer(i));
+    choices.append(button);
+  });
+  byId("feedback").hidden = true;
+}
+
+// chosenIndex가 null이면 시간 초과다.
+function handleAnswer(chosenIndex) {
+  const result = answerCurrent(app.round, chosenIndex);
+  if (!result) {
+    return; // 이미 답한 문항
+  }
+  showFeedback(result);
+}
+
+function showFeedback(result) {
+  const round = app.round;
+  byId("choices").querySelectorAll("button").forEach((button, i) => {
+    button.disabled = true;
+    if (i === result.question.answer) {
+      button.classList.add("correct");
+    } else if (i === result.chosenIndex) {
+      button.classList.add("wrong");
+    }
+  });
+
+  const resultLine = byId("feedback-result");
+  resultLine.textContent = feedbackMessage(result);
+  resultLine.className = result.correct ? "feedback-result is-correct" : "feedback-result is-wrong";
+  byId("feedback-explanation").textContent = result.question.explanation;
+  byId("feedback-source").textContent = `출처: ${result.question.source}`;
+  byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
+
+  const isLast = round.index === round.questions.length - 1;
+  byId("next-button").textContent = isLast ? "결과 보기" : "다음";
+  byId("feedback").hidden = false;
+  byId("next-button").focus();
+}
+
+function feedbackMessage(result) {
+  return result.correct ? "정답입니다." : "오답입니다.";
+}
+
+function nextQuestion() {
+  if (goNext(app.round)) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  const round = app.round;
+  const total = round.questions.length;
+  const correct = correctCount(round);
+  byId("result-score").textContent = `${formatScore(roundScore(round))} / ${total}`;
+  byId("result-detail").textContent = `${total}문제 중 ${correct}개 맞힘, ${total - correct}개 틀림`;
+  byId("result-notice").hidden = round.mode !== "practice";
+  showScreen("result-screen");
+}
+
+if (typeof document !== "undefined") {
+  setUpPage();
+}
+
 // Node 테스트에서 규칙 함수를 불러 쓰기 위한 부분이다. 브라우저에는 module이 없어 실행되지 않는다.
 if (typeof module !== "undefined") {
   module.exports = {

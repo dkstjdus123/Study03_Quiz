@@ -1,0 +1,176 @@
+/* 2026-10-09 22:29 KST */
+
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1f2430;
+  --muted: #5d6475;
+  --line: #d9dce5;
+  --accent: #3157d5;
+  --correct: #1f7a45;
+  --correct-bg: #e3f5ea;
+  --wrong: #b42828;
+  --wrong-bg: #fdeaea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* display를 지정한 요소도 hidden이면 숨긴다. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 0 0 16px;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 24px 0 8px;
+}
+
+button {
+  font: inherit;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.option[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.primary {
+  width: 100%;
+  margin-top: 16px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.notice {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.error {
+  color: var(--wrong);
+  font-weight: 600;
+}
+
+.round-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.quiz-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+}
+
+.question {
+  margin: 16px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.choices {
+  display: grid;
+  gap: 8px;
+}
+
+.choice {
+  text-align: left;
+}
+
+.choice.correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+  color: var(--correct);
+  font-weight: 600;
+}
+
+.choice.wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-bg);
+  color: var(--wrong);
+}
+
+.feedback {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+}
+
+.feedback p {
+  margin: 0 0 8px;
+}
+
+.feedback-result {
+  font-weight: 700;
+}
+
+.feedback-result.is-correct {
+  color: var(--correct);
+}
+
+.feedback-result.is-wrong {
+  color: var(--wrong);
+}
+
+.source {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.result-score {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
