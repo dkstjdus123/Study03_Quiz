@@ -63,7 +63,33 @@ function isFilled(text) {
   return typeof text === "string" && text.trim() !== "";
 }
 
+// 피셔-예이츠 방식으로 섞은 새 배열을 돌려준다. 원래 배열은 그대로 둔다.
+// random은 테스트에서 결과를 정해 두려고 받는다.
+function shuffle(items, random = Math.random) {
+  const result = items.slice();
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+// 보기 순서를 섞은 문항 사본을 만든다. answer도 섞인 위치로 옮긴다.
+function prepareQuestion(question, random = Math.random) {
+  const order = shuffle(question.choices.map((_, i) => i), random);
+  return {
+    ...question,
+    choices: order.map((i) => question.choices[i]),
+    answer: order.indexOf(question.answer),
+  };
+}
+
+// 문항 순서와 각 문항의 보기 순서를 섞어 한 판을 준비한다.
+function prepareRound(questions, random = Math.random) {
+  return shuffle(questions, random).map((question) => prepareQuestion(question, random));
+}
+
 // Node 테스트에서 규칙 함수를 불러 쓰기 위한 부분이다. 브라우저에는 module이 없어 실행되지 않는다.
 if (typeof module !== "undefined") {
-  module.exports = { CATEGORIES, validateQuestions };
+  module.exports = { CATEGORIES, validateQuestions, shuffle, prepareQuestion, prepareRound };
 }
