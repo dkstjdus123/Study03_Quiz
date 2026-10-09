@@ -89,7 +89,71 @@ function prepareRound(questions, random = Math.random) {
   return shuffle(questions, random).map((question) => prepareQuestion(question, random));
 }
 
+// 맞히면 1점, 힌트를 쓰고 맞히면 0.5점, 틀리거나 시간이 지나면 0점이다.
+function scoreAnswer(correct, usedHint) {
+  if (!correct) {
+    return 0;
+  }
+  return usedHint ? 0.5 : 1;
+}
+
+// 7은 "7"로, 7.5는 "7.5"로 보여 준다.
+function formatScore(score) {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+// 한 판의 상태. mode는 "practice", "speed", "hint" 중 하나다.
+function createRound(mode, category, questions) {
+  return { mode, category, questions, index: 0, usedHint: false, results: [] };
+}
+
+// 지금 문항에 답한다. chosenIndex가 null이면 시간 초과다.
+// 이미 답한 문항이면(보기를 연달아 누름, 0초와 클릭이 겹침) 아무것도 하지 않고 null을 돌려준다.
+function answerCurrent(round, chosenIndex) {
+  if (round.results.length > round.index) {
+    return null;
+  }
+  const question = round.questions[round.index];
+  const correct = chosenIndex === question.answer;
+  const result = { question, chosenIndex, correct, points: scoreAnswer(correct, round.usedHint) };
+  round.results.push(result);
+  return result;
+}
+
+// 다음 문항으로 넘어간다. 남은 문항이 있으면 true를 돌려준다.
+function goNext(round) {
+  round.index += 1;
+  round.usedHint = false;
+  return round.index < round.questions.length;
+}
+
+function roundScore(round) {
+  return round.results.reduce((sum, result) => sum + result.points, 0);
+}
+
+function correctCount(round) {
+  return round.results.filter((result) => result.correct).length;
+}
+
+function wrongQuestions(round) {
+  return round.results.filter((result) => !result.correct).map((result) => result.question);
+}
+
 // Node 테스트에서 규칙 함수를 불러 쓰기 위한 부분이다. 브라우저에는 module이 없어 실행되지 않는다.
 if (typeof module !== "undefined") {
-  module.exports = { CATEGORIES, validateQuestions, shuffle, prepareQuestion, prepareRound };
+  module.exports = {
+    CATEGORIES,
+    validateQuestions,
+    shuffle,
+    prepareQuestion,
+    prepareRound,
+    scoreAnswer,
+    formatScore,
+    createRound,
+    answerCurrent,
+    goNext,
+    roundScore,
+    correctCount,
+    wrongQuestions,
+  };
 }
