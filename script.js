@@ -491,9 +491,15 @@ function setUpPage() {
     byId("start-screen").hidden = true;
     return;
   }
-  validateQuestions(QUESTIONS).forEach((message) => {
+  const problems = validateQuestions(QUESTIONS);
+  problems.forEach((message) => {
     console.warn(`[문항 검사] ${message}`);
   });
+  // 문항 데이터에 오류가 있으면 [시작]을 막고 안내한다. 순위표는 볼 수 있다.
+  if (problems.length > 0) {
+    byId("data-error").hidden = false;
+    byId("start-button").disabled = true;
+  }
 
   makeOptionButtons("mode-buttons", Object.keys(MODE_NAMES), (mode) => MODE_NAMES[mode], (mode) => {
     app.mode = mode;
@@ -549,7 +555,6 @@ function updateStartScreen() {
   markSelected("mode-buttons", app.mode);
   markSelected("category-buttons", app.category);
   byId("start-notice").hidden = app.mode !== "practice";
-  byId("start-error").hidden = true;
 }
 
 // 화면을 바꿀 때는 언제나 스피드 모드 타이머를 멈춘다.
@@ -562,10 +567,6 @@ function showScreen(id) {
 
 function startNewRound() {
   const questions = QUESTIONS.filter((question) => question.category === app.category);
-  if (questions.length === 0) {
-    byId("start-error").hidden = false;
-    return;
-  }
   app.round = createRound(app.mode, app.category, prepareRound(questions));
   app.firstRound = app.round;
   app.retryNumber = 0;
