@@ -159,6 +159,56 @@ function remainingSeconds(deadline, now) {
   return Math.max(0, Math.ceil((deadline - now) / 1000));
 }
 
+const LEADERBOARD_KEY = "quizLeaderboard";
+const LEADERBOARD_SIZE = 10;
+const RANKED_MODES = ["speed", "hint"]; // 연습 모드는 순위표에 기록하지 않는다.
+
+// 순위표는 { "speed:한국사": [{ score, date }, ...], ... } 모양이다.
+function boardKey(mode, category) {
+  return `${mode}:${category}`;
+}
+
+function recordsFor(board, key) {
+  return Array.isArray(board[key]) ? board[key] : [];
+}
+
+// 기록을 넣고 점수 높은 순으로 상위 10개만 남긴 새 순위표를 돌려준다.
+// sort는 안정 정렬이라 점수가 같으면 먼저 들어간(먼저 세운) 기록이 위에 남는다.
+function addRecord(board, key, record) {
+  const records = recordsFor(board, key).concat(record);
+  records.sort((a, b) => b.score - a.score);
+  return { ...board, [key]: records.slice(0, LEADERBOARD_SIZE) };
+}
+
+// 저장된 순위표를 읽는다. 저장소를 쓸 수 없거나 값이 깨져 있으면 빈 순위표를 돌려준다.
+function loadBoard(storage) {
+  try {
+    const board = JSON.parse(storage.getItem(LEADERBOARD_KEY));
+    return board && typeof board === "object" && !Array.isArray(board) ? board : {};
+  } catch {
+    return {};
+  }
+}
+
+// 순위표를 저장한다. 저장소를 쓸 수 없으면 false를 돌려준다.
+function saveBoard(storage, board) {
+  try {
+    storage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 2026-10-09 07:05 형식(브라우저 시각 기준)
+function formatDate(date) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+}
+
 // ===== 화면 =====
 // 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
 
@@ -425,5 +475,12 @@ if (typeof module !== "undefined") {
     useHint,
     SPEED_SECONDS,
     remainingSeconds,
+    LEADERBOARD_KEY,
+    boardKey,
+    recordsFor,
+    addRecord,
+    loadBoard,
+    saveBoard,
+    formatDate,
   };
 }
