@@ -1,6 +1,6 @@
 // 2026-10-09 22:22 KST
 // 문항 데이터. 형식과 작성 규칙은 PRD.md 4장을 따른다.
-// 출처는 모두 한국어 위키백과 문서에서 2026-10-09에 확인했다.
+// 출처는 모두 기관 자료이며 2026-10-10에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
 const QUESTIONS = [
   // ----- 한국사 -----
   {
@@ -9,89 +9,89 @@ const QUESTIONS = [
     question: "1443년 훈민정음을 창제한 조선의 왕은?",
     choices: ["세종", "태종", "세조", "정조"],
     answer: 0,
-    explanation: "세종이 1443년 훈민정음을 창제하고 1446년 반포했다.",
-    source: { name: "한국어 위키백과 「훈민정음」", url: "https://ko.wikipedia.org/wiki/훈민정음" }
+    explanation: "세종은 1443년(세종 25) 겨울에 훈민정음을 창제했다.",
+    source: { name: "한국민족문화대백과사전 「훈민정음」", url: "https://encykorea.aks.ac.kr/Article/E0065805" }
   },
   {
     id: "korean-history-02",
     category: "한국사",
-    question: "1592년 임진왜란 중 한산도 대첩에서 조선 수군을 이끈 장수는?",
+    question: "1592년 7월 한산섬 앞바다에서 일본 수군 주력을 무찌른 해전에서 조선 수군을 이끈 전라좌수사는?",
     choices: ["이순신", "권율", "김시민", "곽재우"],
     answer: 0,
-    explanation: "이순신이 이끈 조선 수군이 1592년 한산도 앞바다에서 일본 수군을 크게 물리쳤다.",
-    source: { name: "한국어 위키백과 「한산도 대첩」", url: "https://ko.wikipedia.org/wiki/한산도_대첩" }
+    explanation: "한산도대첩은 전라좌수사 이순신 등이 이끈 조선 수군이 거둔 승리다.",
+    source: { name: "한국민족문화대백과사전 「한산도대첩」", url: "https://encykorea.aks.ac.kr/Article/E0061676" }
   },
   {
     id: "korean-history-03",
     category: "한국사",
-    question: "676년 기벌포 전투에서 이겨 당나라 세력을 몰아내고 삼국 통일을 완수한 나라는?",
+    question: "676년 기벌포에서 당나라 해군을 크게 깨뜨린 나라는?",
     choices: ["신라", "백제", "고구려", "가야"],
     answer: 0,
-    explanation: "신라는 나당 전쟁에서 이겨 676년 당나라 군대를 대동강 북쪽으로 몰아냈다.",
-    source: { name: "한국어 위키백과 「나당전쟁」", url: "https://ko.wikipedia.org/wiki/나당전쟁" }
+    explanation: "676년 신라 해군이 금강 하구 기벌포에서 당나라 해군을 크게 깨뜨렸다.",
+    source: { name: "한국민족문화대백과사전 「기벌포전투」", url: "https://encykorea.aks.ac.kr/Article/E0008239" }
   },
   {
     id: "korean-history-04",
     category: "한국사",
-    question: "1392년 즉위하여 조선을 건국한 인물은?",
+    question: "1392년 7월 공양왕을 내쫓고 새 왕조 조선의 태조로 즉위한 인물은?",
     choices: ["이성계", "정도전", "이방원", "최영"],
     answer: 0,
-    explanation: "이성계(태조)가 1392년 즉위하여 조선을 세웠다.",
-    source: { name: "한국어 위키백과 「태조 (조선)」", url: "https://ko.wikipedia.org/wiki/태조_(조선)" }
+    explanation: "이성계는 1392년 7월 공양왕을 내쫓고 새 왕조의 태조로 즉위했다.",
+    source: { name: "한국민족문화대백과사전 「태조」", url: "https://encykorea.aks.ac.kr/Article/E0059033" }
   },
   {
     id: "korean-history-05",
     category: "한국사",
-    question: "3·1 운동이 일어난 해는?",
+    question: "3·1운동이 일어난 해는?",
     choices: ["1919년", "1910년", "1926년", "1945년"],
     answer: 0,
-    explanation: "3·1 운동은 1919년 3월 1일 시작되어 전국으로 퍼졌다.",
-    source: { name: "한국어 위키백과 「3·1 운동」", url: "https://ko.wikipedia.org/wiki/3·1_운동" }
+    explanation: "3·1운동은 1919년 3월 1일을 기해 일어난 거족적인 독립만세운동이다.",
+    source: { name: "한국민족문화대백과사전 「3·1운동」", url: "https://encykorea.aks.ac.kr/Article/E0026772" }
   },
   {
     id: "korean-history-06",
     category: "한국사",
-    question: "1377년 청주 흥덕사에서 금속 활자로 인쇄되어 2001년 유네스코 세계기록유산에 등재된 책은?",
-    choices: ["직지심체요절", "팔만대장경", "삼국사기", "동의보감"],
+    question: "1866년 흥선대원군의 천주교 탄압에 대한 보복으로 프랑스군이 강화도에 침입한 사건은?",
+    choices: ["병인양요", "신미양요", "운요호 사건", "임오군란"],
     answer: 0,
-    explanation: "직지심체요절은 1377년 흥덕사에서 금속 활자로 간행되었고 2001년 세계기록유산이 되었다.",
-    source: { name: "한국어 위키백과 「직지심체요절」", url: "https://ko.wikipedia.org/wiki/직지심체요절" }
+    explanation: "병인양요는 1866년 프랑스군이 천주교 탄압의 보복으로 강화도에 침입한 사건이다.",
+    source: { name: "한국민족문화대백과사전 「병인양요」", url: "https://encykorea.aks.ac.kr/Article/E0023142" }
   },
   {
     id: "korean-history-07",
     category: "한국사",
-    question: "1919년 4월 대한민국 임시 정부가 처음 수립된 도시는?",
-    choices: ["상하이", "베이징", "충칭", "도쿄"],
+    question: "1894년 전라도 고부의 동학접주 전봉준 등을 지도자로 동학교도와 농민들이 일으킨 운동은?",
+    choices: ["동학농민운동", "갑신정변", "임오군란", "홍경래의 난"],
     answer: 0,
-    explanation: "대한민국 임시 정부는 1919년 4월 11일 중국 상하이에서 수립되었다.",
-    source: { name: "한국어 위키백과 「대한민국 임시정부」", url: "https://ko.wikipedia.org/wiki/대한민국_임시정부" }
+    explanation: "동학농민운동은 1894년 전봉준 등을 지도자로 동학교도와 농민이 함께 일으켰다.",
+    source: { name: "한국민족문화대백과사전 「동학운동」", url: "https://encykorea.aks.ac.kr/Article/E0016865" }
   },
   {
     id: "korean-history-08",
     category: "한국사",
-    question: "『삼국유사』에 따르면 고조선을 세운 인물은?",
+    question: "『삼국유사』에 기록된 건국 이야기에서 고조선을 세운 인물은?",
     choices: ["단군왕검", "주몽", "온조", "박혁거세"],
     answer: 0,
-    explanation: "『삼국유사』와 『제왕운기』는 단군왕검이 고조선을 세웠다고 전한다.",
-    source: { name: "한국어 위키백과 「단군왕검」", url: "https://ko.wikipedia.org/wiki/단군왕검" }
+    explanation: "단군에 관한 최초의 기록은 『삼국유사』이며, 단군이 고조선을 세웠다고 전한다.",
+    source: { name: "한국민족문화대백과사전 「단군」", url: "https://encykorea.aks.ac.kr/Article/E0013538" }
   },
   {
     id: "korean-history-09",
     category: "한국사",
-    question: "『삼국사기』에 따르면 기원전 18년 백제를 세운 인물은?",
-    choices: ["온조", "주몽", "박혁거세", "김수로"],
+    question: "서기전 18년부터 재위한 백제의 제1대 왕은?",
+    choices: ["온조왕", "동명왕", "박혁거세", "김수로왕"],
     answer: 0,
-    explanation: "『삼국사기』는 온조가 기원전 18년 백제를 세웠다고 기록한다.",
-    source: { name: "한국어 위키백과 「온조왕」", url: "https://ko.wikipedia.org/wiki/온조왕" }
+    explanation: "온조왕은 백제의 제1대 왕으로 서기전 18년부터 서기 28년까지 재위했다.",
+    source: { name: "한국민족문화대백과사전 「온조왕」", url: "https://encykorea.aks.ac.kr/Article/E0038871" }
   },
   {
     id: "korean-history-10",
     category: "한국사",
-    question: "1794년부터 1796년까지 수원 화성을 쌓게 한 조선의 왕은?",
+    question: "1794년 정월에 착공해 1796년에 완성된 수원 화성을 쌓게 한 조선의 왕은?",
     choices: ["정조", "영조", "숙종", "순조"],
     answer: 0,
-    explanation: "수원 화성은 정조 때인 1794년 착공해 1796년 완공되었다.",
-    source: { name: "한국어 위키백과 「수원 화성」", url: "https://ko.wikipedia.org/wiki/수원_화성" }
+    explanation: "수원 화성은 정조 때 1794년 정월에 착공해 1796년에 완성되었다.",
+    source: { name: "한국민족문화대백과사전 「수원 화성」", url: "https://encykorea.aks.ac.kr/Article/E0064671" }
   },
 
   // ----- 세계지리 -----
