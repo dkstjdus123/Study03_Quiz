@@ -20,6 +20,7 @@
       <div id="category-buttons" class="button-grid"></div>
       <p id="start-notice" class="notice">순위표에 기록되지 않음</p>
       <button id="start-button" class="primary" type="button">시작</button>
+      <button id="board-button" class="board-button" type="button">순위표</button>
     </section>
 
     <!-- 퀴즈 화면 -->
@@ -49,10 +50,28 @@
       <p id="result-notice" class="notice">순위표에 기록되지 않음</p>
       <p id="result-retry" hidden></p>
       <p id="all-cleared" class="cleared" hidden>틀린 문제를 모두 맞혔습니다.</p>
+      <p id="result-saved" class="notice" hidden></p>
       <div class="actions">
         <button id="retry-wrong-button" type="button" hidden>틀린 문제 다시 풀기</button>
         <button id="replay-button" type="button">다시 하기</button>
         <button id="home-button" type="button">처음으로</button>
+      </div>
+    </section>
+
+    <!-- 순위표 화면 -->
+    <section id="leaderboard-screen" class="screen" hidden>
+      <h2>순위표</h2>
+      <div id="board-mode-buttons" class="button-grid"></div>
+      <div id="board-category-buttons" class="button-grid board-categories"></div>
+      <table id="board-table" class="board-table">
+        <thead>
+          <tr><th>순위</th><th>점수</th><th>날짜</th></tr>
+        </thead>
+        <tbody id="board-rows"></tbody>
+      </table>
+      <p id="board-empty" class="notice" hidden>아직 기록이 없습니다.</p>
+      <div class="actions">
+        <button id="board-home-button" type="button">처음으로</button>
       </div>
     </section>
   </main>

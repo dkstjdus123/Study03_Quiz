@@ -214,7 +214,7 @@ function formatDate(date) {
 
 const MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" };
 
-// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머, 다시 풀기 상태
+// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머, 다시 풀기 상태, 순위표 화면에서 고른 표
 const app = {
   mode: "practice",
   category: CATEGORIES[0],
@@ -223,6 +223,8 @@ const app = {
   deadline: 0,
   firstRound: null, // 다시 풀기를 해도 점수는 이 판 기준이다.
   retryNumber: 0, // 0이면 처음 판, 1부터는 다시 풀기 회차
+  boardMode: RANKED_MODES[0],
+  boardCategory: CATEGORIES[0],
 };
 
 function byId(id) {
@@ -254,6 +256,17 @@ function setUpPage() {
   byId("retry-wrong-button").addEventListener("click", startRetry);
   byId("replay-button").addEventListener("click", startNewRound);
   byId("home-button").addEventListener("click", () => showScreen("start-screen"));
+
+  makeOptionButtons("board-mode-buttons", RANKED_MODES, (mode) => MODE_NAMES[mode], (mode) => {
+    app.boardMode = mode;
+    renderBoard();
+  });
+  makeOptionButtons("board-category-buttons", CATEGORIES, (category) => category, (category) => {
+    app.boardCategory = category;
+    renderBoard();
+  });
+  byId("board-button").addEventListener("click", showBoard);
+  byId("board-home-button").addEventListener("click", () => showScreen("start-screen"));
 
   updateStartScreen();
 }
@@ -424,12 +437,15 @@ function feedbackMessage(result) {
 function nextQuestion() {
   if (goNext(app.round)) {
     showQuestion();
-  } else {
-    showResult();
+    return;
   }
+  // 스피드 모드와 힌트 모드만 판이 끝날 때 한 번 기록한다.
+  const saved = RANKED_MODES.includes(app.round.mode) ? recordResult(app.round) : null;
+  showResult(saved);
 }
 
-function showResult() {
+// saved: 순위표에 기록했으면 true, 기록하지 못했으면 false, 기록 대상이 아니면 null
+function showResult(saved) {
   const first = app.firstRound;
   const round = app.round;
   const total = first.questions.length;
@@ -449,7 +465,55 @@ function showResult() {
   retryButton.hidden = round.mode !== "practice" || remaining === 0;
   retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
   byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
+
+  const savedLine = byId("result-saved");
+  savedLine.hidden = saved === null;
+  savedLine.textContent = saved
+    ? "순위표에 기록했습니다."
+    : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
   showScreen("result-screen");
+}
+
+// 브라우저 설정에 따라 localStorage에 접근하는 것만으로 오류가 날 수 있어 감싼다.
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+// 끝난 판의 점수를 순위표에 넣는다. 저장했으면 true를 돌려준다.
+function recordResult(round) {
+  const storage = browserStorage();
+  const record = { score: roundScore(round), date: formatDate(new Date()) };
+  const board = addRecord(loadBoard(storage), boardKey(round.mode, round.category), record);
+  return saveBoard(storage, board);
+}
+
+function showBoard() {
+  renderBoard();
+  showScreen("leaderboard-screen");
+}
+
+function renderBoard() {
+  markSelected("board-mode-buttons", app.boardMode);
+  markSelected("board-category-buttons", app.boardCategory);
+  const records = recordsFor(loadBoard(browserStorage()), boardKey(app.boardMode, app.boardCategory));
+
+  const rows = byId("board-rows");
+  rows.replaceChildren();
+  records.forEach((record, i) => {
+    const row = document.createElement("tr");
+    [`${i + 1}위`, `${formatScore(record.score)}점`, record.date].forEach((text) => {
+      const cell = document.createElement("td");
+      cell.textContent = text;
+      row.append(cell);
+    });
+    rows.append(row);
+  });
+  byId("board-table").hidden = records.length === 0;
+  byId("board-empty").hidden = records.length > 0;
 }
 
 if (typeof document !== "undefined") {
