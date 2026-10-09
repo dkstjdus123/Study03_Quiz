@@ -44,8 +44,8 @@ function validateQuestions(questions) {
     if (!isFilled(q.explanation)) {
       messages.push(`${label}: 해설(explanation)이 비어 있습니다.`);
     }
-    if (!isFilled(q.source)) {
-      messages.push(`${label}: 출처(source)가 비어 있습니다.`);
+    if (!isValidSource(q.source)) {
+      messages.push(`${label}: 출처(source)에 name과 http(s)로 시작하는 url이 있어야 합니다.`);
     }
   });
 
@@ -61,6 +61,17 @@ function validateQuestions(questions) {
 
 function isFilled(text) {
   return typeof text === "string" && text.trim() !== "";
+}
+
+// 출처는 { name, url } 모양이다. url은 화면에서 링크가 되므로 http:// 또는 https://로 시작해야 한다.
+function isValidSource(source) {
+  return (
+    typeof source === "object" &&
+    source !== null &&
+    isFilled(source.name) &&
+    isFilled(source.url) &&
+    /^https?:\/\//.test(source.url)
+  );
 }
 
 // 피셔-예이츠 방식으로 섞은 새 배열을 돌려준다. 원래 배열은 그대로 둔다.
@@ -435,13 +446,29 @@ function showFeedback(result) {
   resultLine.textContent = feedbackMessage(result);
   resultLine.className = result.correct ? "feedback-result is-correct" : "feedback-result is-wrong";
   byId("feedback-explanation").textContent = result.question.explanation;
-  byId("feedback-source").textContent = `출처: ${result.question.source}`;
+  showSource(result.question.source);
   byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
 
   const isLast = round.index === round.questions.length - 1;
   byId("next-button").textContent = isLast ? "결과 보기" : "다음";
   byId("feedback").hidden = false;
   byId("next-button").focus();
+}
+
+// 출처 이름을 새 탭에서 열리는 링크로 보여 준다. 형식이 틀린 출처는 링크 없이 이름만 보여 준다.
+function showSource(source) {
+  const line = byId("feedback-source");
+  line.replaceChildren("출처: ");
+  if (!isValidSource(source)) {
+    line.append(source && typeof source.name === "string" ? source.name : "");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = source.url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = source.name;
+  line.append(link);
 }
 
 function feedbackMessage(result) {
