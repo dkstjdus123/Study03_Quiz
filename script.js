@@ -139,6 +139,26 @@ function wrongQuestions(round) {
   return round.results.filter((result) => !result.correct).map((result) => result.question);
 }
 
+// 지금 문항에 힌트를 쓴다. 지울 오답 보기 2개의 위치를 돌려준다.
+// 이미 힌트를 썼거나 답한 문항이면 null을 돌려준다.
+function useHint(round, random = Math.random) {
+  if (round.usedHint || round.results.length > round.index) {
+    return null;
+  }
+  round.usedHint = true;
+  const answer = round.questions[round.index].answer;
+  const wrongChoices = [0, 1, 2, 3].filter((i) => i !== answer);
+  return shuffle(wrongChoices, random).slice(0, 2);
+}
+
+const SPEED_SECONDS = 15;
+
+// 마감 시각까지 남은 초(올림)를 돌려준다. 마감이 지났으면 0이다.
+// 마감 시각을 기준으로 계산하므로, 탭을 벗어나 타이머가 늦게 불려도 시간이 어긋나지 않는다.
+function remainingSeconds(deadline, now) {
+  return Math.max(0, Math.ceil((deadline - now) / 1000));
+}
+
 // ===== 화면 =====
 // 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
 
@@ -312,5 +332,8 @@ if (typeof module !== "undefined") {
     roundScore,
     correctCount,
     wrongQuestions,
+    useHint,
+    SPEED_SECONDS,
+    remainingSeconds,
   };
 }
