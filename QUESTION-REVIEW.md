@@ -27,6 +27,16 @@
 
 | id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
 |---|---|---|---|---|---|
+| world-geography-01 | 캔버라 | 외교부: "수도 : 캔버라(Canberra)" | ✅ | ✅ | 해당 없음 |
+| world-geography-02 | 러시아 | 외교부: "면적 : 1709만㎢ (한반도의 78배 미국의 1.8배)" | ✅ (캐나다, 중국, 미국은 약 1,000만㎢ 이하) | ✅ | 해당 없음 (최상급 대신 수치로 물음) |
+| world-geography-03 | 에베레스트산 | NASA: "Earth's highest mountain, with its summit at 8,848 meters above sea level" | ✅ | ✅ | ✅ 해발 고도 기준, 2026년 현재 |
+| world-geography-04 | 파나마 운하 | 파나마 운하청: "first opened on August 15, 1914", "between the Atlantic and Pacific oceans" | ✅ (수에즈는 지중해와 홍해) | ✅ | 해당 없음 |
+| world-geography-05 | 포르투갈어 | 외교부: "언어 : 포르투갈어" | ✅ | ✅ | 해당 없음 |
+| world-geography-06 | 아프리카 | NASA: "northern shores of Africa's vast Sahara Desert" | ✅ | ✅ | 해당 없음 |
+| world-geography-07 | 레이캬비크 | 외교부: 아이슬란드 "수도 : 레이캬비크" | ✅ | ✅ | 해당 없음 |
+| world-geography-08 | 지중해 | NASA: "The Nile River is pictured flowing toward the Mediterranean Sea" | ✅ | ✅ | 해당 없음 |
+| world-geography-09 | 안데스산맥 | NASA: "natural border between Chile, Argentina, and Bolivia", "Chilean Andes in South America" | ✅ | ✅ | 해당 없음 |
+| world-geography-10 | 앙카라 | 외교부: 튀르키예공화국 "수도 : 앙카라" | ✅ | ✅ | 해당 없음 |
 
 ## 과학
 

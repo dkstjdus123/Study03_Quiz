@@ -98,47 +98,47 @@ const QUESTIONS = [
   {
     id: "world-geography-01",
     category: "세계지리",
-    question: "오스트레일리아의 수도는?",
+    question: "오스트레일리아(호주)의 수도는?",
     choices: ["캔버라", "시드니", "멜버른", "퍼스"],
     answer: 0,
-    explanation: "오스트레일리아의 수도는 캔버라이며, 시드니와 멜버른은 수도가 아니다.",
-    source: { name: "한국어 위키백과 「캔버라」", url: "https://ko.wikipedia.org/wiki/캔버라" }
+    explanation: "호주의 수도는 캔버라이며, 시드니와 멜버른은 수도가 아니다.",
+    source: { name: "외교부 국가 정보 「호주」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=41" }
   },
   {
     id: "world-geography-02",
     category: "세계지리",
-    question: "2026년 현재 국토 면적 기준으로 세계에서 가장 넓은 나라는?",
+    question: "국토 면적이 약 1,709만㎢로 한반도의 약 78배인 나라는?",
     choices: ["러시아", "캐나다", "중국", "미국"],
     answer: 0,
-    explanation: "러시아의 면적은 약 1,709만 km²로 세계에서 가장 넓다.",
-    source: { name: "한국어 위키백과 「러시아」", url: "https://ko.wikipedia.org/wiki/러시아" }
+    explanation: "러시아 연방의 면적은 1,709만㎢로 한반도의 78배, 미국의 1.8배이다.",
+    source: { name: "외교부 국가 정보 「러시아」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=84" }
   },
   {
     id: "world-geography-03",
     category: "세계지리",
-    question: "2026년 현재 해발 고도(해수면으로부터의 높이) 기준으로 세계에서 가장 높은 산은?",
+    question: "2026년 현재 해발 고도(해수면으로부터의 높이) 기준으로 지구에서 가장 높은 산은?",
     choices: ["에베레스트산", "K2", "칸첸중가", "킬리만자로산"],
     answer: 0,
-    explanation: "에베레스트산은 해발 약 8,848.86m로, 해발 고도 기준 가장 높은 산이다.",
-    source: { name: "한국어 위키백과 「에베레스트산」", url: "https://ko.wikipedia.org/wiki/에베레스트산" }
+    explanation: "에베레스트산은 정상이 해발 8,848m로 지구에서 가장 높은 산이다.",
+    source: { name: "NASA Earth Observatory 「North Col of Mount Everest」", url: "https://science.nasa.gov/earth/earth-observatory/north-col-of-mount-everest-48603/" }
   },
   {
     id: "world-geography-04",
     category: "세계지리",
-    question: "1869년 개통되어 지중해와 홍해를 잇는 운하는?",
-    choices: ["수에즈 운하", "파나마 운하", "킬 운하", "코린트 운하"],
+    question: "1914년 8월 15일 개통되어 대서양과 태평양 사이를 잇는 운하는?",
+    choices: ["파나마 운하", "수에즈 운하", "킬 운하", "코린트 운하"],
     answer: 0,
-    explanation: "수에즈 운하는 1869년 개통되었으며 지중해와 홍해를 잇는다.",
-    source: { name: "한국어 위키백과 「수에즈 운하」", url: "https://ko.wikipedia.org/wiki/수에즈_운하" }
+    explanation: "파나마 운하는 대서양과 태평양 사이에 있으며 1914년 8월 15일 개통했다.",
+    source: { name: "파나마 운하청 「Trade Routes」", url: "https://pancanal.com/en/maritime-services/trade-routes/" }
   },
   {
     id: "world-geography-05",
     category: "세계지리",
-    question: "브라질의 공용어는?",
+    question: "브라질에서 쓰는 언어는?",
     choices: ["포르투갈어", "스페인어", "영어", "프랑스어"],
     answer: 0,
-    explanation: "브라질은 포르투갈의 식민지였던 역사로 포르투갈어를 공용어로 쓴다.",
-    source: { name: "한국어 위키백과 「브라질」", url: "https://ko.wikipedia.org/wiki/브라질" }
+    explanation: "브라질의 언어는 포르투갈어이며, 수도는 브라질리아이다.",
+    source: { name: "외교부 국가 정보 「브라질」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=56" }
   },
   {
     id: "world-geography-06",
@@ -146,35 +146,35 @@ const QUESTIONS = [
     question: "사하라 사막이 있는 대륙은?",
     choices: ["아프리카", "아시아", "남아메리카", "오세아니아"],
     answer: 0,
-    explanation: "사하라 사막은 아프리카 북부의 약 940만 km²를 차지한다.",
-    source: { name: "한국어 위키백과 「사하라 사막」", url: "https://ko.wikipedia.org/wiki/사하라_사막" }
+    explanation: "사하라 사막은 아프리카 북부에 펼쳐진 거대한 사막이다.",
+    source: { name: "NASA Earth Observatory 「Dust Plumes Off North Africa Coast」", url: "https://science.nasa.gov/earth/earth-observatory/dust-plumes-off-north-africa-coast-14215" }
   },
   {
     id: "world-geography-07",
     category: "세계지리",
-    question: "캐나다의 수도는?",
-    choices: ["오타와", "토론토", "밴쿠버", "몬트리올"],
+    question: "아이슬란드의 수도는?",
+    choices: ["레이캬비크", "오슬로", "헬싱키", "코펜하겐"],
     answer: 0,
-    explanation: "캐나다의 수도는 온타리오주에 있는 오타와이다.",
-    source: { name: "한국어 위키백과 「오타와」", url: "https://ko.wikipedia.org/wiki/오타와" }
+    explanation: "외교부 국가 정보에 따르면 아이슬란드의 수도는 레이캬비크이다.",
+    source: { name: "외교부 국가 정보 「아이슬란드」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=108" }
   },
   {
     id: "world-geography-08",
     category: "세계지리",
-    question: "나일강이 이집트 북부에서 흘러드는 바다는?",
+    question: "이집트를 지나는 나일강이 흘러드는 바다는?",
     choices: ["지중해", "홍해", "아라비아해", "흑해"],
     answer: 0,
-    explanation: "나일강은 이집트 북부의 삼각주를 지나 지중해로 흘러든다.",
-    source: { name: "한국어 위키백과 「나일강」", url: "https://ko.wikipedia.org/wiki/나일강" }
+    explanation: "나일강은 이집트 북부를 지나 지중해로 흘러든다.",
+    source: { name: "NASA 「The Nile River is pictured flowing toward the Mediterranean Sea」", url: "https://www.nasa.gov/image-article/nile-river-pictured-flowing-toward-mediterranean-sea/" }
   },
   {
     id: "world-geography-09",
     category: "세계지리",
-    question: "안데스산맥이 있는 대륙은?",
-    choices: ["남아메리카", "북아메리카", "아프리카", "유럽"],
+    question: "남아메리카에서 칠레, 아르헨티나, 볼리비아 사이의 자연 경계를 이루는 산맥은?",
+    choices: ["안데스산맥", "알프스산맥", "로키산맥", "우랄산맥"],
     answer: 0,
-    explanation: "안데스산맥은 남아메리카 대륙의 서쪽 해안을 따라 뻗어 있다.",
-    source: { name: "한국어 위키백과 「안데스산맥」", url: "https://ko.wikipedia.org/wiki/안데스산맥" }
+    explanation: "안데스산맥은 남아메리카에서 칠레, 아르헨티나, 볼리비아의 자연 경계를 이룬다.",
+    source: { name: "NASA Earth Observatory 「Looking Down on the Andes」", url: "https://science.nasa.gov/earth/earth-observatory/looking-down-on-the-andes-151670/" }
   },
   {
     id: "world-geography-10",
@@ -182,8 +182,8 @@ const QUESTIONS = [
     question: "튀르키예의 수도는?",
     choices: ["앙카라", "이스탄불", "이즈미르", "안탈리아"],
     answer: 0,
-    explanation: "튀르키예의 수도는 앙카라이며, 가장 큰 도시인 이스탄불과 구별해야 한다.",
-    source: { name: "한국어 위키백과 「앙카라」", url: "https://ko.wikipedia.org/wiki/앙카라" }
+    explanation: "튀르키예공화국의 수도는 앙카라이며, 이스탄불은 수도가 아니다.",
+    source: { name: "외교부 국가 정보 「튀르키예」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=126" }
   },
 
   // ----- 과학 -----
