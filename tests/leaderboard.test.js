@@ -105,3 +105,13 @@ test("저장소를 쓸 수 없어도 멈추지 않는다", () => {
 test("formatDate는 YYYY-MM-DD HH:MM 형식으로 바꾼다", () => {
   assert.equal(formatDate(new Date(2026, 9, 9, 7, 5)), "2026-10-09 07:05");
 });
+
+test("recordsFor는 기록 모양이 아닌 항목을 버린다", () => {
+  const board = { "speed:과학": [null, 1, "x", { date: "d" }, { score: 3, date: "d" }] };
+  assert.deepEqual(recordsFor(board, "speed:과학"), [{ score: 3, date: "d" }]);
+});
+
+test("addRecord는 깨진 항목이 섞인 표에도 기록을 넣는다", () => {
+  const board = addRecord({ "speed:과학": [null, { score: 5, date: "a" }] }, "speed:과학", { score: 7, date: "b" });
+  assert.deepEqual(board["speed:과학"], [{ score: 7, date: "b" }, { score: 5, date: "a" }]);
+});

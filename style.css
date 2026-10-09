@@ -34,6 +34,7 @@ body {
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 16px 48px;
+  overflow-wrap: anywhere;
 }
 
 h1 {
