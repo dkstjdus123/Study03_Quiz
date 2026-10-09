@@ -14,6 +14,8 @@
 
     <!-- 시작 화면 -->
     <section id="start-screen" class="screen">
+      <h2>모드</h2>
+      <div id="mode-buttons" class="button-grid"></div>
       <h2>카테고리</h2>
       <div id="category-buttons" class="button-grid"></div>
       <p id="start-notice" class="notice">순위표에 기록되지 않음</p>
@@ -25,10 +27,12 @@
       <p id="round-label" class="round-label"></p>
       <div class="quiz-header">
         <span id="progress"></span>
+        <span id="timer" class="timer" hidden></span>
         <span id="current-score"></span>
       </div>
       <p id="question-text" class="question"></p>
       <div id="choices" class="choices"></div>
+      <button id="hint-button" class="hint-button" type="button" hidden>힌트</button>
       <div id="feedback" class="feedback" hidden>
         <p id="feedback-result" class="feedback-result"></p>
         <p id="feedback-explanation"></p>
