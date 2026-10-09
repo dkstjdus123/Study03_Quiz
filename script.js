@@ -168,8 +168,12 @@ function boardKey(mode, category) {
   return `${mode}:${category}`;
 }
 
+// 손으로 고친 저장값에는 기록이 아닌 항목이 섞일 수 있어 점수가 숫자인 객체만 남긴다.
 function recordsFor(board, key) {
-  return Array.isArray(board[key]) ? board[key] : [];
+  if (!Array.isArray(board[key])) {
+    return [];
+  }
+  return board[key].filter((record) => record !== null && typeof record === "object" && typeof record.score === "number");
 }
 
 // 기록을 넣고 점수 높은 순으로 상위 10개만 남긴 새 순위표를 돌려준다.
@@ -231,9 +235,20 @@ function byId(id) {
   return document.getElementById(id);
 }
 
+// questions.js를 읽지 못하면 undefined를 돌려준다.
+// 문법 오류면 QUESTIONS가 아예 없고, 따옴표 없이 쓴 한글 값처럼 실행 중 오류가 나면
+// QUESTIONS가 있어도 읽는 순간 오류가 나므로 try로 감싼다.
+function readQuestions() {
+  try {
+    return QUESTIONS;
+  } catch {
+    return undefined;
+  }
+}
+
 function setUpPage() {
-  // questions.js에 문법 오류가 있으면 QUESTIONS가 만들어지지 않는다.
-  if (typeof QUESTIONS === "undefined") {
+  // questions.js를 읽지 못했거나 배열이 아니면 안내만 보여 준다.
+  if (!Array.isArray(readQuestions())) {
     byId("load-error").hidden = false;
     byId("start-screen").hidden = true;
     return;
@@ -296,6 +311,7 @@ function updateStartScreen() {
   markSelected("mode-buttons", app.mode);
   markSelected("category-buttons", app.category);
   byId("start-notice").hidden = app.mode !== "practice";
+  byId("start-error").hidden = true;
 }
 
 // 화면을 바꿀 때는 언제나 스피드 모드 타이머를 멈춘다.
@@ -308,6 +324,10 @@ function showScreen(id) {
 
 function startNewRound() {
   const questions = QUESTIONS.filter((question) => question.category === app.category);
+  if (questions.length === 0) {
+    byId("start-error").hidden = false;
+    return;
+  }
   app.round = createRound(app.mode, app.category, prepareRound(questions));
   app.firstRound = app.round;
   app.retryNumber = 0;
