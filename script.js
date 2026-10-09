@@ -164,13 +164,15 @@ function remainingSeconds(deadline, now) {
 
 const MODE_NAMES = { practice: "연습", speed: "스피드", hint: "힌트" };
 
-// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머
+// 지금 고른 모드와 카테고리, 진행 중인 판, 스피드 모드 타이머, 다시 풀기 상태
 const app = {
   mode: "practice",
   category: CATEGORIES[0],
   round: null,
   timerId: null,
   deadline: 0,
+  firstRound: null, // 다시 풀기를 해도 점수는 이 판 기준이다.
+  retryNumber: 0, // 0이면 처음 판, 1부터는 다시 풀기 회차
 };
 
 function byId(id) {
@@ -199,6 +201,7 @@ function setUpPage() {
   byId("start-button").addEventListener("click", startNewRound);
   byId("next-button").addEventListener("click", nextQuestion);
   byId("hint-button").addEventListener("click", handleHint);
+  byId("retry-wrong-button").addEventListener("click", startRetry);
   byId("replay-button").addEventListener("click", startNewRound);
   byId("home-button").addEventListener("click", () => showScreen("start-screen"));
 
@@ -243,6 +246,17 @@ function showScreen(id) {
 function startNewRound() {
   const questions = QUESTIONS.filter((question) => question.category === app.category);
   app.round = createRound(app.mode, app.category, prepareRound(questions));
+  app.firstRound = app.round;
+  app.retryNumber = 0;
+  showScreen("quiz-screen");
+  showQuestion();
+}
+
+// 바로 앞 판에서 틀린 문항만 순서와 보기를 다시 섞어서 푼다(연습 모드만).
+function startRetry() {
+  const wrong = wrongQuestions(app.round);
+  app.round = createRound("practice", app.round.category, prepareRound(wrong));
+  app.retryNumber += 1;
   showScreen("quiz-screen");
   showQuestion();
 }
@@ -250,7 +264,9 @@ function startNewRound() {
 function showQuestion() {
   const round = app.round;
   const question = round.questions[round.index];
-  byId("round-label").textContent = `${MODE_NAMES[round.mode]} 모드, ${round.category}`;
+  const label = `${MODE_NAMES[round.mode]} 모드, ${round.category}`;
+  byId("round-label").textContent =
+    app.retryNumber > 0 ? `${label}, 다시 풀기 ${app.retryNumber}회차` : label;
   byId("progress").textContent = `${round.index + 1} / ${round.questions.length}`;
   byId("current-score").textContent = `점수 ${formatScore(roundScore(round))}`;
   byId("question-text").textContent = question.question;
@@ -364,12 +380,25 @@ function nextQuestion() {
 }
 
 function showResult() {
+  const first = app.firstRound;
   const round = app.round;
-  const total = round.questions.length;
-  const correct = correctCount(round);
-  byId("result-score").textContent = `${formatScore(roundScore(round))} / ${total}`;
+  const total = first.questions.length;
+  const correct = correctCount(first);
+  const scoreText = `${formatScore(roundScore(first))} / ${total}`;
+  byId("result-score").textContent = app.retryNumber > 0 ? `처음 점수 ${scoreText}` : scoreText;
   byId("result-detail").textContent = `${total}문제 중 ${correct}개 맞힘, ${total - correct}개 틀림`;
   byId("result-notice").hidden = round.mode !== "practice";
+
+  const retryLine = byId("result-retry");
+  retryLine.hidden = app.retryNumber === 0;
+  retryLine.textContent =
+    `다시 풀기 ${app.retryNumber}회차: ${round.questions.length}문제 중 ${correctCount(round)}개 맞힘`;
+
+  const remaining = wrongQuestions(round).length;
+  const retryButton = byId("retry-wrong-button");
+  retryButton.hidden = round.mode !== "practice" || remaining === 0;
+  retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
+  byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
   showScreen("result-screen");
 }
 

@@ -188,3 +188,8 @@ button:disabled {
   opacity: 0.35;
   text-decoration: line-through;
 }
+
+.cleared {
+  color: var(--correct);
+  font-weight: 600;
+}
