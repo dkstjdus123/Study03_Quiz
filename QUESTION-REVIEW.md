@@ -47,7 +47,7 @@
 | science-03 | 철 | PubChem: 원소 "Iron", 기호 "Fe" | ✅ | ✅ | 해당 없음 |
 | science-04 | 광합성 | NASA: "During photosynthesis, plants absorb carbon dioxide and sunlight to create fuel—glucose and other sugars" | ✅ | ✅ | 해당 없음 |
 | science-05 | 화성 | NASA Mars: "the surface of the Red Planet", "it looks like a bright red point of light" | ✅ | ✅ | 해당 없음 |
-| science-06 | 목성 | NASA: "the largest in the solar system, by far" | ✅ | ✅ | ✅ NASA 자료 기준, 2026년 현재 |
+| science-06 | 목성 | NASA Jupiter Facts: "With a radius of 43,440.7 miles (69,911 kilometers), Jupiter is 11 times wider than Earth", "It's the largest planet in our solar system" | ✅ | ✅ | ✅ NASA 자료 기준, 반지름으로 크기 기준을 밝힘, 2026년 현재 |
 | science-07 | 100°C | NIST: 물의 Tboil "373.17 ± 0.04 K"(약 100°C) | ✅ (다른 보기는 10°C 이상 차이) | ✅ | 해당 없음 |
 | science-08 | 아이작 뉴턴 | 미국 의회도서관: "Newton's universal law of gravitation bridged the terrestrial and celestial realms" | ✅ | ✅ | 해당 없음 |
 | science-09 | 수소 | 로스앨러모스 국립연구소: Hydrogen, 기호 H, 원자 번호 1 | ✅ | ✅ | 해당 없음 |
