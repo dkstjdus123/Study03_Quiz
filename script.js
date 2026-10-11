@@ -173,23 +173,30 @@ function remainingSeconds(deadline, now) {
 }
 
 const LEADERBOARD_KEY = "quizLeaderboard";
-const LEADERBOARD_SIZE = 10;
+const LEADERBOARD_SIZE = 5;
+const NAME_MAX_LENGTH = 12;
 const RANKED_MODES = ["speed", "hint"]; // 연습 모드는 순위표에 기록하지 않는다.
 
-// 순위표는 { "speed:한국사": [{ score, date }, ...], ... } 모양이다.
+// 순위표는 { "speed:한국사": [{ name, score, date }, ...], ... } 모양이다.
 function boardKey(mode, category) {
   return `${mode}:${category}`;
 }
 
-// 손으로 고친 저장값에는 기록이 아닌 항목이 섞일 수 있어 점수가 숫자인 객체만 남긴다.
+// 손으로 고친 저장값이나 이름이 없던 예전 기록이 섞일 수 있어, 이름이 글자이고 점수가 숫자인 기록만 남긴다.
 function recordsFor(board, key) {
   if (!Array.isArray(board[key])) {
     return [];
   }
-  return board[key].filter((record) => record !== null && typeof record === "object" && typeof record.score === "number");
+  return board[key].filter(
+    (record) =>
+      record !== null &&
+      typeof record === "object" &&
+      typeof record.name === "string" &&
+      typeof record.score === "number",
+  );
 }
 
-// 기록을 넣고 점수 높은 순으로 상위 10개만 남긴 새 순위표를 돌려준다.
+// 기록을 넣고 점수 높은 순으로 상위 5개만 남긴 새 순위표를 돌려준다.
 // sort는 안정 정렬이라 점수가 같으면 먼저 들어간(먼저 세운) 기록이 위에 남는다.
 function addRecord(board, key, record) {
   const records = recordsFor(board, key).concat(record);
@@ -224,6 +231,12 @@ function formatDate(date) {
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
     `${pad(date.getHours())}:${pad(date.getMinutes())}`
   );
+}
+
+// 입력한 이름의 앞뒤 공백을 지운다. 1~12자가 아니면 null을 돌려준다.
+function cleanName(text) {
+  const name = typeof text === "string" ? text.trim() : "";
+  return name.length >= 1 && name.length <= NAME_MAX_LENGTH ? name : null;
 }
 
 // ===== 자체 점검 =====
@@ -511,6 +524,89 @@ check("remainingSeconds는 남은 시간을 초 단위로 올림하고, 지났�
   );
 });
 
+// --- 3단계: 순위표 ---
+
+check("boardKey는 모드와 카테고리를 합친다", () => {
+  expectEqual(boardKey("speed", "한국사"), "speed:한국사");
+});
+
+check("addRecord는 점수 높은 순으로 넣고 원래 순위표는 바꾸지 않는다", () => {
+  const empty = {};
+  const b1 = addRecord(empty, "speed:과학", { name: "가", score: 6, date: "d1" });
+  const b2 = addRecord(b1, "speed:과학", { name: "나", score: 9, date: "d2" });
+  const b3 = addRecord(b2, "speed:과학", { name: "다", score: 7.5, date: "d3" });
+  expectEqual(b3["speed:과학"].map((r) => r.name), ["나", "다", "가"]);
+  expectEqual([empty, b1["speed:과학"].length], [{}, 1]);
+});
+
+check("점수가 같으면 먼저 세운 기록이 위에 있다", () => {
+  let board = addRecord({}, "hint:과학", { name: "먼저", score: 8, date: "d1" });
+  board = addRecord(board, "hint:과학", { name: "나중", score: 8, date: "d2" });
+  expectEqual(board["hint:과학"].map((r) => r.name), ["먼저", "나중"]);
+});
+
+check("표마다 상위 5개만 남긴다", () => {
+  let board = {};
+  for (let score = 1; score <= 6; score += 1) {
+    board = addRecord(board, "speed:과학", { name: `n${score}`, score, date: `d${score}` });
+  }
+  expectEqual(board["speed:과학"].map((r) => r.score), [6, 5, 4, 3, 2]);
+});
+
+check("다른 표의 기록은 건드리지 않는다", () => {
+  const before = { "hint:한국사": [{ name: "가", score: 5, date: "d" }] };
+  const board = addRecord(before, "speed:한국사", { name: "나", score: 3, date: "e" });
+  expectEqual(board["hint:한국사"], [{ name: "가", score: 5, date: "d" }]);
+});
+
+check("recordsFor는 이름이나 점수가 없는 항목을 버린다", () => {
+  const board = {
+    "speed:과학": [null, 1, "x", { score: 3, date: "예전 기록" }, { name: "가", date: "d" }, { name: "나", score: 4, date: "d" }],
+  };
+  expectEqual(recordsFor(board, "speed:과학"), [{ name: "나", score: 4, date: "d" }]);
+  expectEqual(recordsFor({ "speed:과학": "깨진 값" }, "speed:과학"), []);
+});
+
+check("saveBoard로 저장한 순위표를 loadBoard로 다시 읽고, 깨진 값은 빈 순위표다", () => {
+  const data = {};
+  const storage = {
+    getItem: (key) => (key in data ? data[key] : null),
+    setItem: (key, value) => {
+      data[key] = String(value);
+    },
+  };
+  const board = addRecord({}, "speed:과학", { name: "가", score: 7, date: "2026-10-09 21:50" });
+  expectEqual(saveBoard(storage, board), true);
+  expectEqual(loadBoard(storage), board);
+  ["{깨짐", "[1,2]", "null", "3"].forEach((broken) => {
+    data[LEADERBOARD_KEY] = broken;
+    expectEqual(loadBoard(storage), {});
+  });
+});
+
+check("저장소를 쓸 수 없어도 멈추지 않는다", () => {
+  const blocked = {
+    getItem() {
+      throw new Error("막힘");
+    },
+    setItem() {
+      throw new Error("막힘");
+    },
+  };
+  expectEqual([loadBoard(blocked), saveBoard(blocked, {}), loadBoard(null), saveBoard(null, {})], [{}, false, {}, false]);
+});
+
+check("formatDate는 YYYY-MM-DD HH:MM 형식으로 바꾼다", () => {
+  expectEqual(formatDate(new Date(2026, 9, 9, 7, 5)), "2026-10-09 07:05");
+});
+
+check("cleanName은 앞뒤 공백을 지우고, 1~12자가 아니면 null이다", () => {
+  expectEqual(
+    [cleanName("  민수 "), cleanName("   "), cleanName(""), cleanName("가".repeat(12)), cleanName("가".repeat(13))],
+    ["민수", null, null, "가".repeat(12), null],
+  );
+});
+
 // ===== 화면 =====
 // 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
 
@@ -575,6 +671,7 @@ function setUpPage() {
   byId("retry-wrong-button").addEventListener("click", startRetry);
   byId("replay-button").addEventListener("click", startNewRound);
   byId("home-button").addEventListener("click", () => showScreen("start-screen"));
+  byId("record-form").addEventListener("submit", handleRecord);
 
   makeOptionButtons("board-mode-buttons", RANKED_MODES, (mode) => MODE_NAMES[mode], (mode) => {
     app.boardMode = mode;
@@ -774,13 +871,10 @@ function nextQuestion() {
     showQuestion();
     return;
   }
-  // 스피드 모드와 힌트 모드만 판이 끝날 때 한 번 기록한다.
-  const saved = RANKED_MODES.includes(app.round.mode) ? recordResult(app.round) : null;
-  showResult(saved);
+  showResult();
 }
 
-// saved: 순위표에 기록했으면 true, 기록하지 못했으면 false, 기록 대상이 아니면 null
-function showResult(saved) {
+function showResult() {
   const first = app.firstRound;
   const round = app.round;
   const total = first.questions.length;
@@ -801,12 +895,33 @@ function showResult(saved) {
   retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
   byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
 
+  // 스피드 모드와 힌트 모드만 이름을 받아 기록한다. 새 결과 화면마다 입력 칸을 비우고 다시 연다.
+  byId("record-form").hidden = !RANKED_MODES.includes(round.mode);
+  byId("name-input").value = "";
+  byId("name-input").disabled = false;
+  byId("record-button").disabled = false;
+  byId("result-saved").hidden = true;
+  showScreen("result-screen");
+}
+
+// 결과 화면에서 이름을 받아 이번 판을 순위표에 기록한다. 기록하면 다시 기록하지 못하게 잠근다.
+function handleRecord(event) {
+  event.preventDefault();
+  if (byId("record-button").disabled) {
+    return; // 이번 판은 이미 기록했다.
+  }
   const savedLine = byId("result-saved");
-  savedLine.hidden = saved === null;
-  savedLine.textContent = saved
+  savedLine.hidden = false;
+  const name = cleanName(byId("name-input").value);
+  if (name === null) {
+    savedLine.textContent = "이름을 입력해 주세요.";
+    return;
+  }
+  byId("name-input").disabled = true;
+  byId("record-button").disabled = true;
+  savedLine.textContent = recordResult(app.round, name)
     ? "순위표에 기록했습니다."
     : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
-  showScreen("result-screen");
 }
 
 // 브라우저 설정에 따라 localStorage에 접근하는 것만으로 오류가 날 수 있어 감싼다.
@@ -818,10 +933,10 @@ function browserStorage() {
   }
 }
 
-// 끝난 판의 점수를 순위표에 넣는다. 저장했으면 true를 돌려준다.
-function recordResult(round) {
+// 끝난 판의 점수를 이름과 함께 순위표에 넣는다. 저장했으면 true를 돌려준다.
+function recordResult(round, name) {
   const storage = browserStorage();
-  const record = { score: roundScore(round), date: formatDate(new Date()) };
+  const record = { name, score: roundScore(round), date: formatDate(new Date()) };
   const board = addRecord(loadBoard(storage), boardKey(round.mode, round.category), record);
   return saveBoard(storage, board);
 }
@@ -840,7 +955,7 @@ function renderBoard() {
   rows.replaceChildren();
   records.forEach((record, i) => {
     const row = document.createElement("tr");
-    [`${i + 1}위`, `${formatScore(record.score)}점`, record.date].forEach((text) => {
+    [`${i + 1}위`, record.name, `${formatScore(record.score)}점`, record.date].forEach((text) => {
       const cell = document.createElement("td");
       cell.textContent = text;
       row.append(cell);

@@ -51,6 +51,11 @@
       <p id="result-notice" class="notice">순위표에 기록되지 않음</p>
       <p id="result-retry" hidden></p>
       <p id="all-cleared" class="cleared" hidden>틀린 문제를 모두 맞혔습니다.</p>
+      <form id="record-form" class="record-form" hidden>
+        <label for="name-input">이름(별명)</label>
+        <input id="name-input" type="text" maxlength="12" autocomplete="off">
+        <button id="record-button" type="submit">순위표에 기록</button>
+      </form>
       <p id="result-saved" class="notice" hidden></p>
       <div class="actions">
         <button id="retry-wrong-button" type="button" hidden>틀린 문제 다시 풀기</button>
@@ -66,7 +71,7 @@
       <div id="board-category-buttons" class="button-grid board-categories"></div>
       <table id="board-table" class="board-table">
         <thead>
-          <tr><th>순위</th><th>점수</th><th>날짜</th></tr>
+          <tr><th>순위</th><th>이름</th><th>점수</th><th>날짜</th></tr>
         </thead>
         <tbody id="board-rows"></tbody>
       </table>
