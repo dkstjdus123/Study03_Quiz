@@ -451,6 +451,66 @@ check("questions.js의 실제 문항이 문항 검사를 통과한다", () => {
   expectEqual(validateQuestions(readQuestions()), []);
 });
 
+// --- 2단계: 힌트, 남은 시간 ---
+
+// 첫 문항은 정답이 0번, 둘째 문항은 정답이 1번인 힌트 모드 판
+function sampleHintRound() {
+  return createRound("hint", "한국사", [
+    sampleQuestion({ id: "q-1" }),
+    sampleQuestion({ id: "q-2", choices: ["오답1", "정답", "오답2", "오답3"], answer: 1 }),
+  ]);
+}
+
+check("useHint는 정답이 아닌 보기 2개의 위치를 돌려준다", () => {
+  const round = sampleHintRound();
+  expectEqual(useHint(round, () => 0), [2, 3]);
+  expectEqual(round.usedHint, true);
+});
+
+check("useHint는 어떤 경우에도 정답을 지우지 않는다", () => {
+  for (let i = 0; i < 200; i += 1) {
+    const round = sampleHintRound();
+    round.index = 1;
+    const removed = useHint(round);
+    if (removed.length !== 2 || removed[0] === removed[1] || removed.includes(1)) {
+      throw new Error(`지운 보기 ${JSON.stringify(removed)}`);
+    }
+  }
+});
+
+check("useHint는 한 문항에 한 번만, 답하기 전에만 쓸 수 있다", () => {
+  const first = sampleHintRound();
+  useHint(first);
+  expectEqual(useHint(first), null);
+  const second = sampleHintRound();
+  answerCurrent(second, 0);
+  expectEqual([useHint(second), second.usedHint], [null, false]);
+});
+
+check("힌트를 쓰고 맞히면 0.5점이다", () => {
+  const round = sampleHintRound();
+  useHint(round);
+  expectEqual(answerCurrent(round, 0).points, 0.5);
+});
+
+check("스피드 모드 제한 시간은 15초다", () => {
+  expectEqual(SPEED_SECONDS, 15);
+});
+
+check("remainingSeconds는 남은 시간을 초 단위로 올림하고, 지났으면 0이다", () => {
+  expectEqual(
+    [
+      remainingSeconds(15000, 0),
+      remainingSeconds(15000, 1),
+      remainingSeconds(15000, 1000),
+      remainingSeconds(15000, 14999),
+      remainingSeconds(15000, 15000),
+      remainingSeconds(15000, 20000),
+    ],
+    [15, 15, 14, 1, 0, 0],
+  );
+});
+
 // ===== 화면 =====
 // 아래는 브라우저에서만 실행된다. index.html의 <section>을 보이거나 숨겨서 화면을 바꾼다.
 
