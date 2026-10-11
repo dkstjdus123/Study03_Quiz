@@ -1,6 +1,6 @@
 // 2026-10-09 22:22 KST
 // 문항 데이터. 형식과 작성 규칙은 PRD.md 4장을 따른다.
-// 출처는 모두 기관 자료이며 2026-10-10~11에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
+// 출처는 모두 기관 자료이며 2026-10-10~12에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
 const QUESTIONS = [
   // ----- 한국사 -----
   {
@@ -98,11 +98,11 @@ const QUESTIONS = [
   {
     id: "world-geography-01",
     category: "세계지리",
-    question: "오스트레일리아(호주)의 수도는?",
-    choices: ["캔버라", "시드니", "멜버른", "퍼스"],
+    question: "칠레의 수도는?",
+    choices: ["산티아고", "발파라이소", "리마", "부에노스아이레스"],
     answer: 0,
-    explanation: "호주의 수도는 캔버라이며, 시드니와 멜버른은 수도가 아니다.",
-    source: { name: "외교부 국가 정보 「호주」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=41" }
+    explanation: "칠레공화국의 수도는 산티아고이다.",
+    source: { name: "외교부 국가 정보 「칠레」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=69" }
   },
   {
     id: "world-geography-02",
@@ -134,7 +134,7 @@ const QUESTIONS = [
   {
     id: "world-geography-05",
     category: "세계지리",
-    question: "브라질에서 쓰는 언어는?",
+    question: "브라질의 공용어는?",
     choices: ["포르투갈어", "스페인어", "영어", "프랑스어"],
     answer: 0,
     explanation: "브라질의 언어는 포르투갈어이며, 수도는 브라질리아이다.",

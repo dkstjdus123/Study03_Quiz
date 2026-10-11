@@ -27,11 +27,11 @@
 
 | id | 정답 | 출처에서 확인한 내용 | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점 |
 |---|---|---|---|---|---|
-| world-geography-01 | 캔버라 | 외교부: "수도 : 캔버라(Canberra)" | ✅ | ✅ | 해당 없음 |
+| world-geography-01 | 산티아고 | 외교부: 칠레공화국 "수도 : 산티아고(Santiago, 824만명)" | ✅ (리마는 페루, 부에노스아이레스는 아르헨티나의 수도) | ✅ | 해당 없음 |
 | world-geography-02 | 러시아 | 외교부: "면적 : 1709만㎢ (한반도의 78배 미국의 1.8배)" | ✅ (캐나다, 중국, 미국은 약 1,000만㎢ 이하) | ✅ | 해당 없음 (최상급 대신 수치로 물음) |
 | world-geography-03 | 에베레스트산 | NASA: "Earth's highest mountain, with its summit at 8,848 meters above sea level" | ✅ | ✅ | ✅ 해발 고도 기준, 2026년 현재 |
 | world-geography-04 | 파나마 운하 | 파나마 운하청: "first opened on August 15, 1914", "between the Atlantic and Pacific oceans" | ✅ (수에즈는 지중해와 홍해) | ✅ | 해당 없음 |
-| world-geography-05 | 포르투갈어 | 외교부: "언어 : 포르투갈어" | ✅ | ✅ | 해당 없음 |
+| world-geography-05 | 포르투갈어 | 외교부: 브라질 "언어 : 포르투갈어" | ✅ (문제를 "공용어"로 물어 하나로 좁힘) | ✅ | 해당 없음 |
 | world-geography-06 | 아프리카 | NASA: "northern shores of Africa's vast Sahara Desert" | ✅ | ✅ | 해당 없음 |
 | world-geography-07 | 레이캬비크 | 외교부: 아이슬란드 "수도 : 레이캬비크" | ✅ | ✅ | 해당 없음 |
 | world-geography-08 | 지중해 | NASA: "The Nile River is pictured flowing toward the Mediterranean Sea" | ✅ | ✅ | 해당 없음 |
@@ -70,7 +70,7 @@
 
 ## 교수님 저장소 문항과의 비교
 
-정답이 같은 문항은 0건입니다(IMPL-PLAN.md의 겹침 확인 명령). 소재는 같지만 묻는 사실이 다른 문항은 다음과 같습니다.
+정답이 같은 문항은 0건입니다. 정답 글자가 일부만 같아도 잡도록 넓힌 확인에서 나온 쌍은 아래 표에 함께 적었습니다. 호주 수도 문항은 교수님 wg-09(야스-캔버라 선정)와 같은 사실이어서 칠레 수도로 바꿨습니다. 소재는 같지만 묻는 사실이 다른 문항은 다음과 같습니다.
 
 | 이 저장소 | 교수님 저장소 | 차이 |
 |---|---|---|
@@ -78,3 +78,5 @@
 | korean-history-02 한산도대첩의 지휘관 | kh-06 한산도대첩의 전술 대형 | 지휘관과 전술로 다름 |
 | science-04 광합성이라는 과정의 이름 | sc-07 광합성이 일어나는 세포 소기관 | 과정과 소기관으로 다름 |
 | arts-culture-05 판소리 다섯 바탕 | ac-05 판소리 고수 | 작품과 반주자로 다름 |
+| world-geography-08 나일강이 흘러드는 바다(지중해) | wg-11 수에즈 운하가 잇는 두 바다(지중해와 홍해) | 강과 운하로 다름 |
+| science-03 Fe의 원소 이름(철) | sc-10 지구 외핵의 물질(액체 상태의 철과 니켈) | 원소 기호와 지구 구조로 다름 |
