@@ -944,15 +944,17 @@ function handleRecord(event) {
   const savedLine = byId("result-saved");
   savedLine.hidden = false;
   const name = cleanName(byId("name-input").value);
+  // 기록하지 못한 안내는 빨간 오류 글씨로, 기록한 안내는 회색 글씨로 보여 준다.
   if (name === null) {
+    savedLine.className = "error";
     savedLine.textContent = "이름을 입력해 주세요.";
     return;
   }
   byId("name-input").disabled = true;
   byId("record-button").disabled = true;
-  savedLine.textContent = recordResult(app.round, name)
-    ? "순위표에 기록했습니다."
-    : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
+  const saved = recordResult(app.round, name);
+  savedLine.className = saved ? "notice" : "error";
+  savedLine.textContent = saved ? "순위표에 기록했습니다." : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
 }
 
 // 브라우저 설정에 따라 localStorage에 접근하는 것만으로 오류가 날 수 있어 감싼다.
