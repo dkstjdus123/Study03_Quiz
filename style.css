@@ -234,3 +234,23 @@ button:disabled {
   border-radius: 8px;
   font: inherit;
 }
+
+.mode-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mode-button {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+}
+
+.mode-name {
+  font-weight: 700;
+}
+
+.mode-rule {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

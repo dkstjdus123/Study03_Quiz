@@ -14,14 +14,34 @@
 
     <!-- 시작 화면 -->
     <section id="start-screen" class="screen">
-      <h2>모드</h2>
-      <div id="mode-buttons" class="button-grid"></div>
-      <h2>카테고리</h2>
+      <h2>카테고리를 고르세요</h2>
       <div id="category-buttons" class="button-grid"></div>
-      <p id="start-notice" class="notice">순위표에 기록되지 않음</p>
       <p id="data-error" class="error" hidden>문항 데이터에 오류가 있습니다. 개발자 도구(F12) 콘솔을 확인해 주세요.</p>
-      <button id="start-button" class="primary" type="button">시작</button>
       <button id="board-button" class="board-button" type="button">순위표</button>
+    </section>
+
+    <!-- 모드 선택 화면 -->
+    <section id="mode-screen" class="screen" hidden>
+      <h2 id="mode-title"></h2>
+      <p class="notice">모드를 고르세요</p>
+      <div id="mode-buttons" class="mode-list">
+        <button class="mode-button" type="button" data-mode="practice">
+          <span class="mode-name">연습</span>
+          <span class="mode-rule">시간 제한과 힌트 없음, 맞히면 1점</span>
+          <span class="mode-rule">순위표에 기록되지 않음</span>
+        </button>
+        <button class="mode-button" type="button" data-mode="speed">
+          <span class="mode-name">스피드</span>
+          <span class="mode-rule">문항마다 15초, 시간이 지나면 오답, 맞히면 1점</span>
+        </button>
+        <button class="mode-button" type="button" data-mode="hint">
+          <span class="mode-name">힌트</span>
+          <span class="mode-rule">문항마다 힌트 1번(오답 2개 지움), 힌트를 쓰고 맞히면 0.5점</span>
+        </button>
+      </div>
+      <div class="actions">
+        <button id="mode-back-button" type="button">뒤로</button>
+      </div>
     </section>
 
     <!-- 퀴즈 화면 -->
