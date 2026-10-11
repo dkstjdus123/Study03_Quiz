@@ -671,6 +671,7 @@ function setUpPage() {
   byId("retry-wrong-button").addEventListener("click", startRetry);
   byId("replay-button").addEventListener("click", startNewRound);
   byId("home-button").addEventListener("click", () => showScreen("start-screen"));
+  byId("record-form").addEventListener("submit", handleRecord);
 
   makeOptionButtons("board-mode-buttons", RANKED_MODES, (mode) => MODE_NAMES[mode], (mode) => {
     app.boardMode = mode;
@@ -870,13 +871,10 @@ function nextQuestion() {
     showQuestion();
     return;
   }
-  // 스피드 모드와 힌트 모드만 판이 끝날 때 한 번 기록한다.
-  const saved = RANKED_MODES.includes(app.round.mode) ? recordResult(app.round) : null;
-  showResult(saved);
+  showResult();
 }
 
-// saved: 순위표에 기록했으면 true, 기록하지 못했으면 false, 기록 대상이 아니면 null
-function showResult(saved) {
+function showResult() {
   const first = app.firstRound;
   const round = app.round;
   const total = first.questions.length;
@@ -897,12 +895,33 @@ function showResult(saved) {
   retryButton.textContent = app.retryNumber === 0 ? "틀린 문제 다시 풀기" : "남은 문제 다시 풀기";
   byId("all-cleared").hidden = app.retryNumber === 0 || remaining > 0;
 
+  // 스피드 모드와 힌트 모드만 이름을 받아 기록한다. 새 결과 화면마다 입력 칸을 비우고 다시 연다.
+  byId("record-form").hidden = !RANKED_MODES.includes(round.mode);
+  byId("name-input").value = "";
+  byId("name-input").disabled = false;
+  byId("record-button").disabled = false;
+  byId("result-saved").hidden = true;
+  showScreen("result-screen");
+}
+
+// 결과 화면에서 이름을 받아 이번 판을 순위표에 기록한다. 기록하면 다시 기록하지 못하게 잠근다.
+function handleRecord(event) {
+  event.preventDefault();
+  if (byId("record-button").disabled) {
+    return; // 이번 판은 이미 기록했다.
+  }
   const savedLine = byId("result-saved");
-  savedLine.hidden = saved === null;
-  savedLine.textContent = saved
+  savedLine.hidden = false;
+  const name = cleanName(byId("name-input").value);
+  if (name === null) {
+    savedLine.textContent = "이름을 입력해 주세요.";
+    return;
+  }
+  byId("name-input").disabled = true;
+  byId("record-button").disabled = true;
+  savedLine.textContent = recordResult(app.round, name)
     ? "순위표에 기록했습니다."
     : "이 브라우저에서는 순위표에 기록할 수 없습니다.";
-  showScreen("result-screen");
 }
 
 // 브라우저 설정에 따라 localStorage에 접근하는 것만으로 오류가 날 수 있어 감싼다.
@@ -914,10 +933,10 @@ function browserStorage() {
   }
 }
 
-// 끝난 판의 점수를 순위표에 넣는다. 저장했으면 true를 돌려준다.
-function recordResult(round) {
+// 끝난 판의 점수를 이름과 함께 순위표에 넣는다. 저장했으면 true를 돌려준다.
+function recordResult(round, name) {
   const storage = browserStorage();
-  const record = { score: roundScore(round), date: formatDate(new Date()) };
+  const record = { name, score: roundScore(round), date: formatDate(new Date()) };
   const board = addRecord(loadBoard(storage), boardKey(round.mode, round.category), record);
   return saveBoard(storage, board);
 }
@@ -936,7 +955,7 @@ function renderBoard() {
   rows.replaceChildren();
   records.forEach((record, i) => {
     const row = document.createElement("tr");
-    [`${i + 1}위`, `${formatScore(record.score)}점`, record.date].forEach((text) => {
+    [`${i + 1}위`, record.name, `${formatScore(record.score)}점`, record.date].forEach((text) => {
       const cell = document.createElement("td");
       cell.textContent = text;
       row.append(cell);
