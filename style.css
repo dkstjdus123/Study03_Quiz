@@ -254,3 +254,8 @@ button:disabled {
   color: var(--muted);
   font-size: 0.9rem;
 }
+
+.student-id {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
