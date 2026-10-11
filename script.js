@@ -682,21 +682,27 @@ function setUpPage() {
   problems.forEach((message) => {
     console.warn(`[문항 검사] ${message}`);
   });
-  // 문항 데이터에 오류가 있으면 [시작]을 막고 안내한다. 순위표는 볼 수 있다.
-  if (problems.length > 0) {
-    byId("data-error").hidden = false;
-    byId("start-button").disabled = true;
-  }
-
-  makeOptionButtons("mode-buttons", Object.keys(MODE_NAMES), (mode) => MODE_NAMES[mode], (mode) => {
-    app.mode = mode;
-    updateStartScreen();
-  });
+  // 시작 화면에서 카테고리를 고르면 모드 선택 화면으로 가고, 모드를 고르면 바로 한 판을 시작한다.
   makeOptionButtons("category-buttons", CATEGORIES, (category) => category, (category) => {
     app.category = category;
-    updateStartScreen();
+    showModeScreen();
   });
-  byId("start-button").addEventListener("click", startNewRound);
+  byId("mode-buttons").querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      app.mode = button.dataset.mode;
+      startNewRound();
+    });
+  });
+  byId("mode-back-button").addEventListener("click", () => showScreen("start-screen"));
+
+  // 문항 데이터에 오류가 있으면 카테고리 버튼을 막고 안내한다. 순위표는 볼 수 있다.
+  if (problems.length > 0) {
+    byId("data-error").hidden = false;
+    byId("category-buttons").querySelectorAll("button").forEach((button) => {
+      button.disabled = true;
+    });
+  }
+
   byId("next-button").addEventListener("click", nextQuestion);
   byId("hint-button").addEventListener("click", handleHint);
   byId("retry-wrong-button").addEventListener("click", startRetry);
@@ -714,8 +720,6 @@ function setUpPage() {
   });
   byId("board-button").addEventListener("click", showBoard);
   byId("board-home-button").addEventListener("click", () => showScreen("start-screen"));
-
-  updateStartScreen();
 }
 
 // 하나만 고를 수 있는 버튼 묶음을 만든다. values의 값마다 버튼 하나를 만든다.
@@ -739,10 +743,9 @@ function markSelected(containerId, selectedValue) {
   });
 }
 
-function updateStartScreen() {
-  markSelected("mode-buttons", app.mode);
-  markSelected("category-buttons", app.category);
-  byId("start-notice").hidden = app.mode !== "practice";
+function showModeScreen() {
+  byId("mode-title").textContent = `${app.category} 카테고리`;
+  showScreen("mode-screen");
 }
 
 // 화면을 바꿀 때는 언제나 스피드 모드 타이머를 멈춘다.
