@@ -235,11 +235,11 @@ const QUESTIONS = [
   {
     id: "science-06",
     category: "과학",
-    question: "2026년 현재 NASA 자료 기준으로 태양계에서 가장 큰 행성은?",
+    question: "2026년 현재 NASA 자료 기준, 반지름이 약 69,911km로 태양계에서 가장 큰 행성은?",
     choices: ["목성", "토성", "지구", "해왕성"],
     answer: 0,
-    explanation: "목성은 태양에서 다섯 번째 행성이며 태양계에서 가장 큰 행성이다.",
-    source: { name: "NASA Science 「Jupiter」", url: "https://science.nasa.gov/jupiter/" }
+    explanation: "목성은 반지름 69,911km로 지구보다 11배 넓으며 태양계에서 가장 큰 행성이다.",
+    source: { name: "NASA Science 「Jupiter Facts」", url: "https://science.nasa.gov/jupiter/jupiter-facts/" }
   },
   {
     id: "science-07",
@@ -366,7 +366,7 @@ const QUESTIONS = [
     question: "2013년 유네스코 인류무형문화유산 대표목록에 오른, 김치를 만들고 나누는 한국의 문화는?",
     choices: ["김장", "강강술래", "줄다리기", "택견"],
     answer: 0,
-    explanation: "'김장, 김치를 담그고 나누는 문화'는 2013년 인류무형문화유산 대표목록에 올랐다.",
+    explanation: "‘김장, 김치를 담그고 나누는 문화’는 2013년 인류무형문화유산 대표목록에 올랐다.",
     source: { name: "유네스코 무형유산 「Kimjang, making and sharing kimchi in the Republic of Korea」", url: "https://ich.unesco.org/en/RL/kimjang-making-and-sharing-kimchi-in-the-republic-of-korea-00881" }
   }
 ];
