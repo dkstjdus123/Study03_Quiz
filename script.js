@@ -22,6 +22,11 @@ function validateQuestions(questions) {
   });
 
   questions.forEach((q, i) => {
+    // 손으로 고치다 null이나 글자 같은 값이 섞이면 나머지 검사를 할 수 없으므로 여기서 알리고 넘어간다.
+    if (q === null || typeof q !== "object") {
+      messages.push(`${i + 1}번째 문항: 문항 형식이 아닙니다.`);
+      return;
+    }
     const label = q.id || `${i + 1}번째 문항`;
     if (!q.id) {
       messages.push(`${label}: id가 비어 있습니다.`);
@@ -250,6 +255,7 @@ function check(name, fn) {
 }
 
 // 두 값을 JSON 문자열로 바꿔 비교한다. 다르면 기댓값과 실제 값을 담은 오류를 던진다.
+// JSON으로 바꾸므로 배열 안의 undefined와 null, NaN과 null은 같게 보인다. 이 둘을 구별해야 하는 점검에는 쓰지 않는다.
 function expectEqual(actual, expected) {
   const actualText = JSON.stringify(actual);
   const expectedText = JSON.stringify(expected);
@@ -444,6 +450,15 @@ check("validateQuestions: 카테고리가 4개 중 하나가 아니거나 개수
   ]);
 });
 
+check("validateQuestions: 문항 자리에 객체가 아닌 값이 있으면 멈추지 않고 경고한다", () => {
+  const set = sampleQuestionSet();
+  set[0] = null;
+  expectEqual(validateQuestions(set), [
+    "1번째 문항: 문항 형식이 아닙니다.",
+    '카테고리 "한국사"의 문항이 9개입니다. 10개여야 합니다.',
+  ]);
+});
+
 check("validateQuestions: 출처가 { name, url } 모양이 아니거나 https://가 아니면 경고한다", () => {
   const broken = [
     "문자열 출처",
@@ -565,6 +580,22 @@ check("recordsFor는 이름이나 점수가 없는 항목을 버린다", () => {
   };
   expectEqual(recordsFor(board, "speed:과학"), [{ name: "나", score: 4, date: "d" }]);
   expectEqual(recordsFor({ "speed:과학": "깨진 값" }, "speed:과학"), []);
+});
+
+check("저장 키는 quizLeaderboard다", () => {
+  expectEqual(LEADERBOARD_KEY, "quizLeaderboard");
+});
+
+check("addRecord는 깨진 항목이 섞인 표에도 기록을 넣는다", () => {
+  const board = addRecord({ "speed:과학": [null, { score: 5 }, { name: "가", score: 4, date: "d" }] }, "speed:과학", {
+    name: "나",
+    score: 6,
+    date: "e",
+  });
+  expectEqual(board["speed:과학"], [
+    { name: "나", score: 6, date: "e" },
+    { name: "가", score: 4, date: "d" },
+  ]);
 });
 
 check("saveBoard로 저장한 순위표를 loadBoard로 다시 읽고, 깨진 값은 빈 순위표다", () => {
