@@ -60,10 +60,10 @@ const QUESTIONS = [
   {
     id: "korean-history-07",
     category: "한국사",
-    question: "1894년 전라도 고부에서 전봉준 등을 지도자로 일어난 대규모 봉기는?",
+    question: "1894년 전라도 고부에서 전봉준 등을 지도자로 삼아 일어난 대규모 봉기는?",
     choices: ["동학농민운동", "갑신정변", "임오군란", "홍경래의 난"],
     answer: 0,
-    explanation: "동학농민운동은 1894년 전봉준 등을 지도자로 동학교도와 농민이 함께 일으켰다.",
+    explanation: "동학농민운동은 1894년 동학교도와 농민이 전봉준 등을 지도자로 삼아 함께 일으켰다.",
     source: { name: "한국민족문화대백과사전 「동학운동」", url: "https://encykorea.aks.ac.kr/Article/E0016865" }
   },
   {
@@ -72,7 +72,7 @@ const QUESTIONS = [
     question: "『삼국유사』에 기록된 건국 이야기에서 고조선을 세운 인물은?",
     choices: ["단군왕검", "주몽", "온조", "박혁거세"],
     answer: 0,
-    explanation: "단군에 관한 최초의 기록은 『삼국유사』이며, 단군이 고조선을 세웠다고 전한다.",
+    explanation: "『삼국유사』 기이편은 『고기』를 인용해 단군왕검이 고조선을 세웠다고 전한다.",
     source: { name: "한국민족문화대백과사전 「단군」", url: "https://encykorea.aks.ac.kr/Article/E0013538" }
   },
   {
@@ -235,10 +235,10 @@ const QUESTIONS = [
   {
     id: "science-06",
     category: "과학",
-    question: "2026년 현재 NASA 자료 기준, 반지름이 약 69,911km로 태양계에서 가장 큰 행성은?",
+    question: "2026년 현재 NASA 자료 기준, 지름으로 따져 태양계에서 가장 큰 행성은?",
     choices: ["목성", "토성", "지구", "해왕성"],
     answer: 0,
-    explanation: "목성은 반지름 69,911km로 지구보다 11배 넓으며 태양계에서 가장 큰 행성이다.",
+    explanation: "목성은 지름이 지구의 약 11배로, 태양계에서 가장 큰 행성이다.",
     source: { name: "NASA Science 「Jupiter Facts」", url: "https://science.nasa.gov/jupiter/jupiter-facts/" }
   },
   {
@@ -271,7 +271,7 @@ const QUESTIONS = [
   {
     id: "science-10",
     category: "과학",
-    question: "1796년 우두에 걸렸던 사람이 천연두를 피하는 데 착안해, 우두 물질을 소년에게 접종한 영국 의사는?",
+    question: "1796년 우두를 앓은 사람은 천연두에 걸리지 않는다는 점에 착안해, 소년에게 우두 물질을 접종한 영국 의사는?",
     choices: ["에드워드 제너", "루이 파스퇴르", "로베르트 코흐", "알렉산더 플레밍"],
     answer: 0,
     explanation: "제너는 1796년 우두 물질을 소년 제임스 핍스에게 접종해 천연두 예방을 시험했다.",

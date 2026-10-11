@@ -87,7 +87,6 @@ PRD가 직접 말하지 않지만 사용자가 겪기 쉬운 경우와, 그것�
 - [ ] 점검 명령이 종료 코드 0, `자체 점검 결과: 통과 20, 실패 0`으로 끝난다.
 - [ ] 문항 검수 명령에 해설 60자 초과와 부정형이 0건이고, 최상급 문제는 모두 기준과 시점이 있다.
 - [ ] 출처 40개 중 위키백과, 나무위키, 블로그, 커뮤니티가 0건이다.
-- [ ] 교수님 저장소 문항과 같은 사실을 묻는 문항이 0건이다.
 - [ ] `tests/` 폴더가 없다.
 
 **브라우저에서 직접 확인할 항목** (탐색기에서 `index.html`을 더블클릭해서 엽니다)
@@ -546,25 +545,16 @@ git commit -m "feat: 문항 데이터 오류를 시작 화면에 알리고 시�
 
 Task 4는 한국사, Task 5는 세계지리, Task 6은 과학, Task 7은 예술과 문화입니다. id(`korean-history-01` 등)와 형식은 그대로 둡니다.
 
-1. 카테고리의 문항 10개를 하나씩 봅니다. 아래 **교체 대상**은 교수님 저장소 문항과 같은 사실을 물으므로 다른 주제로 바꿉니다.
-   - 한국사: `korean-history-06`(직지심체요절), `korean-history-07`(임시 정부 수립 도시)
-   - 세계지리: `world-geography-04`(수에즈 운하)
-   - 과학: `science-06`(헤모글로빈), `science-10`(DNA 이중 나선)
-   - 예술과 문화: `arts-culture-07`(김홍도의 「서당」과 「씨름」)
+1. 카테고리의 문항 10개를 하나씩 봅니다.
 2. 문항마다 WebSearch로 기관 출처를 찾고, WebFetch로 **그 사실이 적힌 페이지**를 직접 열어 정답을 확인합니다.
    - 쓸 출처: 우리역사넷(contents.history.go.kr), 한국민족문화대백과사전(encykorea.aks.ac.kr), 국가유산청(heritage.go.kr), 브리태니커(britannica.com), 유네스코(unesco.org, whc.unesco.org, ich.unesco.org), NASA, 정부나 국제기구 누리집, 미술관이나 박물관 공식 누리집
    - 위키백과, 나무위키, 블로그, 커뮤니티 글은 쓰지 않습니다.
    - 페이지를 열 수 없거나 내용이 확인되지 않으면 그 문항을 버리고 다른 주제로 바꿉니다.
 3. 문항을 고칩니다. 정답은 하나뿐이고 보기 4개는 서로 다릅니다. 부정형은 쓰지 않습니다. 최상급 표현에는 기준과 시점을 넣습니다. 해설은 정답 근거를 담은 60자 이내 한 줄입니다. 작성할 때 정답은 `choices`의 0번, `answer: 0`입니다.
 4. `source`에 `{ name: "기관이나 문서 이름", url: "https://사실이 적힌 페이지" }`를 적습니다.
-5. 교수님 저장소와 겹치는지 확인합니다. 아래 명령은 정답이 같은 문항을 나열합니다. 나열된 문항이 같은 사실을 묻고 있으면 바꿉니다.
-
-   ```bash
-   P="$(mktemp)"; gh api repos/logistex/Study03_Quiz/contents/questions.js -H "Accept: application/vnd.github.raw" > "$P"; node -e "const fs=require('fs'),vm=require('vm');const load=f=>vm.runInNewContext(fs.readFileSync(f,'utf8')+';QUESTIONS');const mine=load('questions.js'),other=load(process.argv[1]);mine.forEach(m=>other.filter(o=>o.choices[o.answer]===m.choices[m.answer]).forEach(o=>console.log(m.id,'|',m.question,'||',o.question)))" "$P"; rm -f "$P"
-   ```
-6. `QUESTION-REVIEW.md`의 해당 카테고리 표를 채웁니다. 열은 `id | 정답 | 출처에서 확인한 내용(한 줄) | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점`입니다. 해당 없는 칸은 `해당 없음`으로 적습니다.
-7. 점검 명령과 문항 검수 명령을 실행합니다. 점검은 `통과 20, 실패 0`이어야 하고, 검수 명령에 해설 60자 초과와 부정형이 없어야 합니다.
-8. 그 카테고리의 변경만 커밋합니다.
+5. `QUESTION-REVIEW.md`의 해당 카테고리 표를 채웁니다. 열은 `id | 정답 | 출처에서 확인한 내용(한 줄) | 정답 하나뿐 | 출처 확인 | 최상급 기준과 시점`입니다. 해당 없는 칸은 `해당 없음`으로 적습니다.
+6. 점검 명령과 문항 검수 명령을 실행합니다. 점검은 `통과 20, 실패 0`이어야 하고, 검수 명령에 해설 60자 초과와 부정형이 없어야 합니다.
+7. 그 카테고리의 변경만 커밋합니다.
 
 ### Task 4: 한국사 10문항
 
