@@ -1,5 +1,5 @@
 // 2026-10-09 22:22 KST
-// 문항 데이터. 형식과 작성 규칙은 PRD.md 4장을 따른다.
+// 문항 데이터. 형식은 PRD.md 4장, 문항 작성 규칙은 CLAUDE.md를 따른다.
 // 출처는 모두 기관 자료이며 2026-10-10~12에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
 const QUESTIONS = [
   // ----- 한국사 -----
@@ -15,7 +15,7 @@ const QUESTIONS = [
   {
     id: "korean-history-02",
     category: "한국사",
-    question: "1592년 7월 한산섬 앞바다에서 일본 수군 주력을 무찌른 해전에서 조선 수군을 이끈 전라좌수사는?",
+    question: "1592년 한산섬 앞바다에서 일본 수군 주력을 무찌른 해전에서 조선 수군을 이끈 전라좌수사는?",
     choices: ["이순신", "권율", "김시민", "곽재우"],
     answer: 0,
     explanation: "한산도대첩은 전라좌수사 이순신 등이 이끈 조선 수군이 거둔 승리다.",
@@ -33,10 +33,10 @@ const QUESTIONS = [
   {
     id: "korean-history-04",
     category: "한국사",
-    question: "1392년 7월 공양왕을 내쫓고 새 왕조 조선의 태조로 즉위한 인물은?",
+    question: "1392년 공양왕을 내쫓고 새 왕조 조선의 태조로 즉위한 인물은?",
     choices: ["이성계", "정도전", "이방원", "최영"],
     answer: 0,
-    explanation: "이성계는 1392년 7월 공양왕을 내쫓고 새 왕조의 태조로 즉위했다.",
+    explanation: "이성계는 1392년 공양왕을 내쫓고 새 왕조의 태조로 즉위했다.",
     source: { name: "한국민족문화대백과사전 「태조」", url: "https://encykorea.aks.ac.kr/Article/E0059033" }
   },
   {
@@ -60,7 +60,7 @@ const QUESTIONS = [
   {
     id: "korean-history-07",
     category: "한국사",
-    question: "1894년 전라도 고부의 동학접주 전봉준 등을 지도자로 동학교도와 농민들이 일으킨 운동은?",
+    question: "1894년 전라도 고부에서 전봉준 등을 지도자로 일어난 대규모 봉기는?",
     choices: ["동학농민운동", "갑신정변", "임오군란", "홍경래의 난"],
     answer: 0,
     explanation: "동학농민운동은 1894년 전봉준 등을 지도자로 동학교도와 농민이 함께 일으켰다.",
@@ -87,10 +87,10 @@ const QUESTIONS = [
   {
     id: "korean-history-10",
     category: "한국사",
-    question: "1794년 정월에 착공해 1796년에 완성된 수원 화성을 쌓게 한 조선의 왕은?",
+    question: "1794년에 착공해 1796년에 완성된 수원 화성을 쌓게 한 조선의 왕은?",
     choices: ["정조", "영조", "숙종", "순조"],
     answer: 0,
-    explanation: "수원 화성은 정조 때 1794년 정월에 착공해 1796년에 완성되었다.",
+    explanation: "수원 화성은 정조 때 1794년에 착공해 1796년에 완성되었다.",
     source: { name: "한국민족문화대백과사전 「수원 화성」", url: "https://encykorea.aks.ac.kr/Article/E0064671" }
   },
 
@@ -107,19 +107,19 @@ const QUESTIONS = [
   {
     id: "world-geography-02",
     category: "세계지리",
-    question: "국토 면적이 약 1,709만㎢로 한반도의 약 78배인 나라는?",
-    choices: ["러시아", "캐나다", "중국", "미국"],
+    question: "2026년 현재 면적 기준으로 세계에서 가장 넓은 대양은?",
+    choices: ["태평양", "대서양", "인도양", "북극해"],
     answer: 0,
-    explanation: "러시아 연방의 면적은 1,709만㎢로 한반도의 78배, 미국의 1.8배이다.",
-    source: { name: "외교부 국가 정보 「러시아」", url: "https://www.mofa.go.kr/www/nation/m_3458/view.do?seq=84" }
+    explanation: "태평양은 세계의 대양 분지 가운데 가장 넓고 가장 깊다.",
+    source: { name: "미국 해양대기청(NOAA) 「What is the largest ocean basin on Earth?」", url: "https://oceanservice.noaa.gov/facts/biggestocean.html" }
   },
   {
     id: "world-geography-03",
     category: "세계지리",
     question: "2026년 현재 해발 고도(해수면으로부터의 높이) 기준으로 지구에서 가장 높은 산은?",
-    choices: ["에베레스트산", "K2", "칸첸중가", "킬리만자로산"],
+    choices: ["에베레스트산", "칸첸중가산", "로체산", "킬리만자로산"],
     answer: 0,
-    explanation: "에베레스트산은 정상이 해발 8,848m로 지구에서 가장 높은 산이다.",
+    explanation: "에베레스트산은 해발 고도 기준으로 지구에서 가장 높은 산이다.",
     source: { name: "NASA Earth Observatory 「North Col of Mount Everest」", url: "https://science.nasa.gov/earth/earth-observatory/north-col-of-mount-everest-48603/" }
   },
   {
@@ -170,7 +170,7 @@ const QUESTIONS = [
   {
     id: "world-geography-09",
     category: "세계지리",
-    question: "남아메리카에서 칠레, 아르헨티나, 볼리비아 사이의 자연 경계를 이루는 산맥은?",
+    question: "칠레, 아르헨티나, 볼리비아 사이의 자연 경계를 이루는 산맥은?",
     choices: ["안데스산맥", "알프스산맥", "로키산맥", "우랄산맥"],
     answer: 0,
     explanation: "안데스산맥은 남아메리카에서 칠레, 아르헨티나, 볼리비아의 자연 경계를 이룬다.",
@@ -247,7 +247,7 @@ const QUESTIONS = [
     question: "1기압에서 순수한 물이 끓는 온도는 약 몇 °C인가?",
     choices: ["100°C", "90°C", "80°C", "120°C"],
     answer: 0,
-    explanation: "NIST 자료에서 물의 끓는점은 약 373.17 K로, 약 100°C이다.",
+    explanation: "1기압에서 물의 끓는점은 약 373 K, 곧 약 100°C이다.",
     source: { name: "NIST Chemistry WebBook 「Water, 상변화 자료」", url: "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=4" }
   },
   {
@@ -310,7 +310,7 @@ const QUESTIONS = [
     id: "arts-culture-04",
     category: "예술과 문화",
     question: "희곡 「로미오와 줄리엣」을 쓴 작가는?",
-    choices: ["윌리엄 셰익스피어", "요한 볼프강 폰 괴테", "레프 톨스토이", "찰스 디킨스"],
+    choices: ["윌리엄 셰익스피어", "크리스토퍼 말로", "레프 톨스토이", "찰스 디킨스"],
     answer: 0,
     explanation: "「로미오와 줄리엣」은 셰익스피어의 희곡 가운데 가장 사랑받는 작품의 하나이다.",
     source: { name: "폴거 셰익스피어 도서관 「Romeo and Juliet」", url: "https://www.folger.edu/explore/shakespeares-works/romeo-and-juliet/" }
@@ -328,7 +328,7 @@ const QUESTIONS = [
     id: "arts-culture-06",
     category: "예술과 문화",
     question: "2012년 유네스코 인류무형문화유산 대표목록에 오른 한국의 서정 민요는?",
-    choices: ["아리랑", "강강술래", "판소리", "종묘제례악"],
+    choices: ["아리랑", "도라지타령", "농부가", "강강술래"],
     answer: 0,
     explanation: "‘아리랑, 한국의 서정 민요’는 2012년 인류무형문화유산 대표목록에 올랐다.",
     source: { name: "유네스코 무형유산 「Arirang, lyrical folk song in the Republic of Korea」", url: "https://ich.unesco.org/en/RL/arirang-lyrical-folk-song-in-the-republic-of-korea-00445" }
@@ -363,7 +363,7 @@ const QUESTIONS = [
   {
     id: "arts-culture-10",
     category: "예술과 문화",
-    question: "2013년 유네스코 인류무형문화유산 대표목록에 오른, 김치를 만들고 나누는 한국의 문화는?",
+    question: "2013년 유네스코 인류무형문화유산 대표목록에 오른, 늦가을에 공동체가 함께 겨우내 먹을 음식을 많이 만들어 나누는 한국의 문화는?",
     choices: ["김장", "강강술래", "줄다리기", "택견"],
     answer: 0,
     explanation: "‘김장, 김치를 담그고 나누는 문화’는 2013년 인류무형문화유산 대표목록에 올랐다.",
