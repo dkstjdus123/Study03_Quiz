@@ -1,6 +1,6 @@
 // 2026-10-09 22:22 KST
 // 문항 데이터. 형식과 작성 규칙은 PRD.md 4장을 따른다.
-// 출처는 모두 기관 자료이며 2026-10-10에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
+// 출처는 모두 기관 자료이며 2026-10-10~11에 페이지를 열어 확인했다. 검수표는 QUESTION-REVIEW.md에 있다.
 const QUESTIONS = [
   // ----- 한국사 -----
   {
@@ -226,11 +226,11 @@ const QUESTIONS = [
   {
     id: "science-05",
     category: "과학",
-    question: "진공에서 빛의 속력에 가장 가까운 값은?",
-    choices: ["초속 약 30만 km", "초속 약 3만 km", "초속 약 300만 km", "초속 약 3천 km"],
+    question: "‘붉은 행성(Red Planet)’이라고도 불리는 태양계 행성은?",
+    choices: ["화성", "금성", "목성", "수성"],
     answer: 0,
-    explanation: "진공에서 빛의 속력은 정확히 초속 299,792,458m, 곧 초속 약 30만 km이다.",
-    source: { name: "NIST 물리 상수 「speed of light in vacuum」", url: "https://physics.nist.gov/cgi-bin/cuu/Value?c" }
+    explanation: "화성은 지구에서 밝은 붉은 점으로 보이며 ‘붉은 행성’으로 불린다.",
+    source: { name: "NASA Science 「Mars」", url: "https://science.nasa.gov/mars/" }
   },
   {
     id: "science-06",
@@ -271,40 +271,40 @@ const QUESTIONS = [
   {
     id: "science-10",
     category: "과학",
-    question: "1928년 세균 배양 접시에 핀 곰팡이를 관찰하고, 그 물질을 페니실린이라 이름 붙인 과학자는?",
-    choices: ["알렉산더 플레밍", "루이 파스퇴르", "로베르트 코흐", "에드워드 제너"],
+    question: "1796년 우두에 걸렸던 사람이 천연두를 피하는 데 착안해, 우두 물질을 소년에게 접종한 영국 의사는?",
+    choices: ["에드워드 제너", "루이 파스퇴르", "로베르트 코흐", "알렉산더 플레밍"],
     answer: 0,
-    explanation: "플레밍은 1928년 배양 접시의 곰팡이를 관찰했고, 그 물질을 페니실린이라 불렀다.",
-    source: { name: "영국 과학박물관 「How was penicillin developed?」", url: "https://www.sciencemuseum.org.uk/objects-and-stories/how-was-penicillin-developed" }
+    explanation: "제너는 1796년 우두 물질을 소년 제임스 핍스에게 접종해 천연두 예방을 시험했다.",
+    source: { name: "미국 질병통제예방센터(CDC) 「History of Smallpox」", url: "https://www.cdc.gov/smallpox/about/history.html" }
   },
 
   // ----- 예술과 문화 -----
   {
     id: "arts-culture-01",
     category: "예술과 문화",
-    question: "프랑스 루브르 박물관에 있는 「모나리자」를 그린 화가는?",
-    choices: ["레오나르도 다빈치", "미켈란젤로", "라파엘로", "렘브란트"],
+    question: "1447년 안평대군이 꿈에서 본 도원 이야기를 듣고 그린 「몽유도원도」의 화가는?",
+    choices: ["안견", "정선", "김홍도", "신윤복"],
     answer: 0,
-    explanation: "「모나리자」는 레오나르도 다빈치의 작품으로 루브르 박물관에 소장되어 있다.",
-    source: { name: "한국어 위키백과 「모나리자」", url: "https://ko.wikipedia.org/wiki/모나리자" }
+    explanation: "「몽유도원도」는 안견이 1447년 안평대군의 꿈 이야기를 듣고 그린 산수화이다.",
+    source: { name: "한국민족문화대백과사전 「몽유도원도」", url: "https://encykorea.aks.ac.kr/Article/E0018824" }
   },
   {
     id: "arts-culture-02",
     category: "예술과 문화",
-    question: "1889년 작품 「별이 빛나는 밤」을 그린 화가는?",
-    choices: ["빈센트 반 고흐", "클로드 모네", "폴 세잔", "에드바르 뭉크"],
+    question: "1922년 7월 『개벽』에 처음 발표된 시 「진달래꽃」을 쓴 시인은?",
+    choices: ["김소월", "윤동주", "한용운", "정지용"],
     answer: 0,
-    explanation: "「별이 빛나는 밤」은 빈센트 반 고흐가 1889년 그린 작품이다.",
-    source: { name: "한국어 위키백과 「별이 빛나는 밤」", url: "https://ko.wikipedia.org/wiki/별이_빛나는_밤" }
+    explanation: "「진달래꽃」은 1922년 7월 『개벽』에 처음 발표한 김소월의 시이다.",
+    source: { name: "한국민족문화대백과사전 「진달래꽃」", url: "https://encykorea.aks.ac.kr/Article/E0054623" }
   },
   {
     id: "arts-culture-03",
     category: "예술과 문화",
-    question: "흔히 「운명」이라는 별칭으로 불리는 교향곡 제5번의 작곡가는?",
-    choices: ["베토벤", "모차르트", "바흐", "슈베르트"],
+    question: "성진이 양소유로 태어나 부귀공명을 누리는 꿈을 꾸는 고전 소설 『구운몽』의 작가는?",
+    choices: ["김만중", "허균", "박지원", "김시습"],
     answer: 0,
-    explanation: "베토벤의 교향곡 제5번은 동양권에서 흔히 「운명」이라는 별칭으로 불린다.",
-    source: { name: "한국어 위키백과 「교향곡 5번 (베토벤)」", url: "https://ko.wikipedia.org/wiki/교향곡_5번_(베토벤)" }
+    explanation: "『구운몽』의 저자는 서포 김만중(1637~1692)이다.",
+    source: { name: "한국민족문화대백과사전 「구운몽」", url: "https://encykorea.aks.ac.kr/Article/E0005948" }
   },
   {
     id: "arts-culture-04",
@@ -312,61 +312,61 @@ const QUESTIONS = [
     question: "희곡 「로미오와 줄리엣」을 쓴 작가는?",
     choices: ["윌리엄 셰익스피어", "요한 볼프강 폰 괴테", "레프 톨스토이", "찰스 디킨스"],
     answer: 0,
-    explanation: "「로미오와 줄리엣」은 윌리엄 셰익스피어의 희곡이다.",
-    source: { name: "한국어 위키백과 「로미오와 줄리엣」", url: "https://ko.wikipedia.org/wiki/로미오와_줄리엣" }
+    explanation: "「로미오와 줄리엣」은 셰익스피어의 희곡 가운데 가장 사랑받는 작품의 하나이다.",
+    source: { name: "폴거 셰익스피어 도서관 「Romeo and Juliet」", url: "https://www.folger.edu/explore/shakespeares-works/romeo-and-juliet/" }
   },
   {
     id: "arts-culture-05",
     category: "예술과 문화",
-    question: "다음 중 현재 전하는 판소리 다섯 마당에 속하는 것은?",
+    question: "다음 중 현재 전하는 판소리 다섯 바탕에 속하는 것은?",
     choices: ["춘향가", "아리랑", "정읍사", "청산별곡"],
     answer: 0,
-    explanation: "판소리 다섯 마당은 춘향가, 흥보가, 심청가, 적벽가, 수궁가이다.",
-    source: { name: "한국어 위키백과 「판소리」", url: "https://ko.wikipedia.org/wiki/판소리" }
+    explanation: "현재 전하는 판소리는 춘향가, 심청가, 흥보가, 수궁가, 적벽가의 다섯 바탕이다.",
+    source: { name: "한국민족문화대백과사전 「판소리」", url: "https://encykorea.aks.ac.kr/Article/E0059663" }
   },
   {
     id: "arts-culture-06",
     category: "예술과 문화",
-    question: "다음 중 파블로 피카소가 1937년에 그린 작품은?",
-    choices: ["게르니카", "절규", "진주 귀걸이를 한 소녀", "수련"],
+    question: "2012년 유네스코 인류무형문화유산 대표목록에 오른 한국의 서정 민요는?",
+    choices: ["아리랑", "강강술래", "판소리", "종묘제례악"],
     answer: 0,
-    explanation: "「게르니카」는 피카소가 1937년에 그린 작품이다.",
-    source: { name: "한국어 위키백과 「게르니카 (그림)」", url: "https://ko.wikipedia.org/wiki/게르니카_(그림)" }
+    explanation: "‘아리랑, 한국의 서정 민요’는 2012년 인류무형문화유산 대표목록에 올랐다.",
+    source: { name: "유네스코 무형유산 「Arirang, lyrical folk song in the Republic of Korea」", url: "https://ich.unesco.org/en/RL/arirang-lyrical-folk-song-in-the-republic-of-korea-00445" }
   },
   {
     id: "arts-culture-07",
     category: "예술과 문화",
-    question: "풍속화 「씨름」과 「서당」을 그린 조선 후기의 화가는?",
-    choices: ["김홍도", "신윤복", "정선", "안견"],
+    question: "1948년 정음사에서 간행된 유고 시집 『하늘과 바람과 별과 시』의 시인은?",
+    choices: ["윤동주", "김소월", "이육사", "한용운"],
     answer: 0,
-    explanation: "김홍도는 「서당」, 「씨름」 같은 풍속화로 서민의 일상을 그렸다.",
-    source: { name: "한국어 위키백과 「김홍도」", url: "https://ko.wikipedia.org/wiki/김홍도" }
+    explanation: "『하늘과 바람과 별과 시』는 윤동주의 시를 모아 1948년 정음사에서 펴낸 시집이다.",
+    source: { name: "한국민족문화대백과사전 「하늘과 바람과 별과 시」", url: "https://encykorea.aks.ac.kr/Article/E0060561" }
   },
   {
     id: "arts-culture-08",
     category: "예술과 문화",
-    question: "1853년 베네치아에서 초연된 오페라 「라 트라비아타」의 작곡가는?",
+    question: "1853년 3월 6일 베네치아 라 페니체 극장에서 초연된 오페라 「라 트라비아타」의 작곡가는?",
     choices: ["주세페 베르디", "자코모 푸치니", "리하르트 바그너", "조르주 비제"],
     answer: 0,
     explanation: "「라 트라비아타」는 베르디의 오페라로 1853년 라 페니체 극장에서 초연되었다.",
-    source: { name: "한국어 위키백과 「라 트라비아타」", url: "https://ko.wikipedia.org/wiki/라_트라비아타" }
+    source: { name: "라 페니체 극장 「Verdi, La traviata」", url: "https://www.teatrolafenice.it/en/event/giuseppe-verdi-la-traviata/" }
   },
   {
     id: "arts-culture-09",
     category: "예술과 문화",
-    question: "대하소설 『토지』를 쓴 작가는?",
+    question: "장편 대하소설 『토지』를 쓴 작가는?",
     choices: ["박경리", "박완서", "황순원", "이청준"],
     answer: 0,
-    explanation: "『토지』는 소설가 박경리가 쓴 대하소설이다.",
-    source: { name: "한국어 위키백과 「토지 (소설)」", url: "https://ko.wikipedia.org/wiki/토지_(소설)" }
+    explanation: "『토지』는 박경리가 지은 장편소설이다.",
+    source: { name: "한국민족문화대백과사전 「토지」", url: "https://encykorea.aks.ac.kr/Article/E0059209" }
   },
   {
     id: "arts-culture-10",
     category: "예술과 문화",
-    question: "2013년 유네스코 인류무형문화유산에 등재된, 김치를 담그고 나누는 한국의 문화는?",
+    question: "2013년 유네스코 인류무형문화유산 대표목록에 오른, 김치를 만들고 나누는 한국의 문화는?",
     choices: ["김장", "강강술래", "줄다리기", "택견"],
     answer: 0,
-    explanation: "'김장, 김치를 담그고 나누는 문화'는 2013년 인류무형문화유산에 등재되었다.",
-    source: { name: "한국어 위키백과 「김장」", url: "https://ko.wikipedia.org/wiki/김장" }
+    explanation: "'김장, 김치를 담그고 나누는 문화'는 2013년 인류무형문화유산 대표목록에 올랐다.",
+    source: { name: "유네스코 무형유산 「Kimjang, making and sharing kimchi in the Republic of Korea」", url: "https://ich.unesco.org/en/RL/kimjang-making-and-sharing-kimchi-in-the-republic-of-korea-00881" }
   }
 ];
